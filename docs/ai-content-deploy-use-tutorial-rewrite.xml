@@ -1,0 +1,195 @@
+<title>AI Content 部署与使用闭环教程（重写版）</title>
+
+<callout emoji="✅" background-color="light-green" border-color="green" text-color="green">
+  <p><b>这不是一份后台功能清单。</b>这是一节能带学员从 GitHub 链接出发，交给 Codex 或 1WorkBuddy 部署，再完成登录、DeepSeek 模型配置和一次内容生产验收的实战教程。</p>
+  <p>⏱ 时间：45-60 分钟。🎯 学完能做什么：独立判断 AI Content 是否部署成功、模型是否配置成功、内容链路是否跑通。📋 准备：GitHub 链接、Docker、Node.js、一个可用的模型平台 API Key。</p>
+  <p>🖥 环境：AI Content 当前仓库版本，macOS，2026 年 7 月 1 日。</p>
+</callout>
+
+<callout emoji="📎" background-color="light-blue" border-color="blue">
+  <p><b>场外资料：</b><a href="https://github.com/zhuy3075-ui/ai-content">GitHub 仓库</a>、仓库根目录 <code>README.md</code>、<code>backend/README.md</code>。本教程只引用必要部署与验收信息，不放无关外链。</p>
+</callout>
+
+<h1>先看你要交付什么</h1>
+<p>很多人部署项目时会卡在“命令好像跑完了，但我不知道算不算成功”。这节课先把成功标准钉住：你最后要交付的不是一串终端日志，而是能被别人打开、登录、配置模型、跑通内容链路的后台。</p>
+
+<whiteboard type="mermaid">
+flowchart LR
+  A[把 GitHub 链接交给 Agent] --> B[Agent 读取 README 并部署]
+  B --> C[打开登录页]
+  C --> D[配置 DeepSeek 平台]
+  D --> E[在线拉取并导入模型]
+  E --> F[保存默认模型]
+  F --> G[用素材和选题验证内容链路]
+  G --> H[提交三张验收截图]
+</whiteboard>
+
+<p>怎么看这张图：左边是部署，右边是使用。部署只解决“系统能打开”；模型和内容链路才证明“系统能工作”。如果你只做到登录页，不算完成。</p>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue">
+  <p><b>课前自检：</b></p>
+  <checkbox done="false">我知道管理员密码、API Key、Cookie 不能写进公开仓库或教程截图。</checkbox>
+  <checkbox done="false">我能把 GitHub 链接复制给 Codex 或 1WorkBuddy。</checkbox>
+  <checkbox done="false">我准备好用截图证明登录页、模型配置页和内容结果页。</checkbox>
+</callout>
+
+<h1>第一章：把部署任务交给 Codex 或 1WorkBuddy</h1>
+<p>上一节你已经知道最终要交付什么。现在不要急着手敲命令，先把项目上下文交给 Agent：仓库在哪里、README 在哪里、要跑出什么结果、哪些东西不能泄露。</p>
+
+<h2>1.1 部署前先读 README，不要让 Agent 盲跑</h2>
+<callout emoji="🎯" background-color="light-green" border-color="green">
+  <p><b>目标：</b>让 Agent 先理解项目结构和安全边界，再给部署计划。</p>
+</callout>
+<p>根 README 负责讲项目用途、本地部署、模型配置和生产安全。backend README 负责讲环境变量、初始化脚本、模型接口和后端验证命令。你给 Agent 的任务里必须明确要求它先读这两份文件。</p>
+
+<table>
+  <colgroup><col width="160"/><col width="280"/><col width="280"/></colgroup>
+  <thead>
+    <tr><th background-color="light-gray">材料</th><th background-color="light-gray">Agent 要读出什么</th><th background-color="light-gray">你怎么验收</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>GitHub 链接</td><td>项目代码来源</td><td>Agent 能列出前端、后端、数据库和 Redis</td></tr>
+    <tr><td>README.md</td><td>本地部署和模型配置主线</td><td>Agent 知道启动顺序和首轮检查脚本</td></tr>
+    <tr><td>backend/README.md</td><td>环境变量、初始化、安全默认值</td><td>Agent 不会把 Swagger、CORS、密钥配置讲错</td></tr>
+  </tbody>
+</table>
+
+<h3>1.1.1 给 Codex 的部署提示词</h3>
+<p>Codex 适合在代码工作区里执行部署、修配置、跑验证。你要让它先读 README，再给计划，最后再执行。</p>
+<pre lang="text" caption="直接发给 Codex 的部署请求"><code>请部署这个项目：https://github.com/zhuy3075-ui/ai-content
+
+目标：把 AI Content 在当前环境跑起来，前端、后端、PostgreSQL、Redis 都要可用。
+要求：先读取 README.md 和 backend/README.md，再给出最小部署计划。
+管理员：初始化一个管理员账号，密码用我稍后提供的强密码，不要写入仓库。
+模型：部署后进入配置管理，确认 AI 平台预设、DeepSeek 在线拉取模型入口和默认模型配置页可见。
+安全：不要提交 .env、API Key、Cookie、数据库备份或任何生产凭据。
+验收：返回前端访问地址、后端接口地址、管理员登录方式、已执行的验证命令，以及登录页和配置管理页截图。</code></pre>
+<p>这段提示词解决的是“让 Codex 做什么”。但 Codex 说完成以后，你还要自己验收页面结果。命令成功不等于教程完成。</p>
+
+<h4>Codex 验收检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red">
+  <p><b>不要接受一句“部署好了”。</b>至少要拿到前端地址、后端验证结果、管理员初始化结果、配置管理页截图。</p>
+</callout>
+
+<h3>1.1.2 给 1WorkBuddy 的部署提示词</h3>
+<p>1WorkBuddy 更像流程交付伙伴。你要让它交付地址、日志摘要、失败排查记录和安全说明，而不是只让它照命令执行。</p>
+<pre lang="text" caption="直接发给 1WorkBuddy 的部署请求"><code>请部署这个 GitHub 仓库：https://github.com/zhuy3075-ui/ai-content
+
+部署目标：AI Content 前端可访问，后端 API 可用，PostgreSQL 和 Redis 可用，数据库迁移完成，管理员账号已初始化。
+执行方式：请先阅读仓库 README 和 backend/README，按文档完成部署，不要要求我手动逐条执行命令。
+环境变量：根据文档准备 DATABASE_URL、REDIS_HOST、REDIS_PORT、JWT_SECRET、CORS_ORIGIN、ENABLE_SWAGGER 等必要配置。
+交付物：请给我前端访问地址、后端健康检查或接口地址、管理员登录入口、部署日志摘要和失败排查记录。
+验收标准：登录页可打开，管理员可登录，配置管理页可访问，AI 平台预设可见，DeepSeek 模型在线拉取入口可见。
+安全要求：不要把 .env、API Key、Cookie、数据库备份、生产密钥提交到 GitHub 或写入公开文档。</code></pre>
+
+<callout emoji="🕳" background-color="light-yellow" border-color="yellow">
+  <p><b>我栽过的坑：</b>以前我只写“帮我部署”，Agent 会直接尝试命令，失败后才发现缺数据库、缺 Redis 或缺管理员账号。现在先让它读 README 并给计划，能提前暴露缺失环境变量和权限。</p>
+</callout>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue">
+  <p><b>5 分钟练习：</b>把上面的 Codex 提示词复制出去，把管理员密码和部署环境改成你自己的。合格标准是 Agent 先返回部署计划，而不是立刻乱改文件。</p>
+</callout>
+
+<h1>第二章：登录后台，先证明部署真的可用</h1>
+<p>部署完成后，第一件事不是配置模型，而是打开登录页。登录页能打开，说明前端至少跑起来；管理员能登录，说明后端、数据库和认证链路至少打通。</p>
+
+<h2>2.1 打开登录页并输入管理员账号</h2>
+<callout emoji="🎯" background-color="light-green" border-color="green">
+  <p><b>目标：</b>用登录成功证明部署结果不是只有终端日志。</p>
+</callout>
+<p>图 1：看这张图时按 ①→②→③→④ 走：先看账号输入框，再看密码输入框和显示按钮，最后确认登录按钮是否清晰可点。这里的重点不是美观，而是可用性。</p>
+
+<h3>2.1.1 登录失败时先查什么</h3>
+<p>如果登录失败，不要立刻重启项目。先检查管理员账号是否初始化、密码是否输入错、是否触发了 15 分钟失败限流。</p>
+<callout emoji="❗" background-color="light-red" border-color="red">
+  <p><b>安全提醒：</b>连续输错密码会被限流，这是保护后台入口，不是系统坏了。</p>
+</callout>
+
+<h1>第三章：配置 DeepSeek 平台和模型</h1>
+<p>现在你已经能进入后台，但内容生产还不能开始。后台要先知道“用哪个平台、哪个模型、哪个任务默认用谁”。这一章只讲完成闭环必须配置的 DeepSeek 平台、模型导入和默认模型。</p>
+
+<h2>3.1 从平台预设创建 DeepSeek</h2>
+<p>平台预设的价值是少填 Base URL 和模型候选，但它不会替你保存 API Key。密钥只在后端保存，前端列表只显示脱敏状态。</p>
+<p>图 2：图中先看 AI 平台预设区域。你要选 DeepSeek 或其他 OpenAI 兼容平台，而不是从空白表单里猜 Base URL。</p>
+
+<h3>3.1.1 保存平台时看三个位置</h3>
+<p>图 3：在预设弹窗里，先确认平台名称，再确认 Base URL，最后填写 API Key 并保存。保存后回到列表，只应该看到脱敏密钥，不应该看到完整密钥。</p>
+<callout emoji="❗" background-color="light-red" border-color="red">
+  <p><b>不要截图真实 API Key。</b>如果要课堂演示，用测试密钥或打码截图；公开教程里只能展示脱敏状态。</p>
+</callout>
+
+<h2>3.2 在线拉取并导入模型</h2>
+<p>平台保存后，再切到 AI 模型。这里的关键变化是：前端不拿明文密钥，后端使用已保存的密钥请求远端 <code>/models</code>，前端只接收模型 ID 列表。</p>
+<p>图 4：先确认你在 AI 模型页，再点击“在线拉取模型”。如果拉取不可用，可以手动添加，但优先用远端列表减少模型 ID 写错的概率。</p>
+<p>图 5：在线拉取弹窗里先选平台，再拉取列表，最后勾选模型并批量导入。已存在的 <code>platformId + modelId</code> 会自动跳过。</p>
+
+<whiteboard type="mermaid">
+flowchart TD
+  A[模型拉取失败] --> B{平台是否启用}
+  B -- 否 --> B1[启用平台后重试]
+  B -- 是 --> C{API Key 是否已保存}
+  C -- 否 --> C1[回到 AI 平台补密钥]
+  C -- 是 --> D{Base URL 是否正确}
+  D -- 否 --> D1[检查预设和 /v1 路径]
+  D -- 是 --> E{远端是否允许 /models}
+  E -- 否 --> E1[检查平台权限或网络]
+  E -- 是 --> F[勾选模型并导入]
+</whiteboard>
+<p>怎么看这棵树：先查平台状态和密钥，再查 Base URL，最后才看远端权限。这样排错不会把“平台配置”和“模型 ID”混在一起。</p>
+
+<h2>3.3 保存默认模型</h2>
+<p>导入模型还不够。系统需要知道文章创作、选题推荐这些任务默认用哪个模型。至少先配置文章创作模型和精选选题模型。</p>
+<p>图 6：看默认模型页时先确认任务名称，再选择模型，最后保存配置。保存后用一个小素材或小选题做一次低成本测试。</p>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue">
+  <p><b>5 分钟练习：</b>添加一个 DeepSeek 平台，在线拉取模型，导入一个模型，并保存为文章创作默认模型。</p>
+  <checkbox done="false">平台列表只显示脱敏密钥。</checkbox>
+  <checkbox done="false">AI 模型列表能看到刚导入的模型。</checkbox>
+  <checkbox done="false">默认模型保存后刷新页面仍然存在。</checkbox>
+</callout>
+
+<h1>第四章：用一条内容链路验收系统</h1>
+<p>模型配置完成后，不要马上宣布项目完成。你还需要证明内容链路能跑：素材进入系统，选题能被评估，文章或小红书笔记能被预览。</p>
+
+<h2>4.1 先看素材有没有进入系统</h2>
+<p>图 7：在素材管理页，先用搜索确认素材存在，再打开详情看正文和来源。没有素材时，后面的选题和文章都会变成空转。</p>
+
+<h2>4.2 再看选题能不能被评估</h2>
+<p>图 8：选题卡片不是装饰，它告诉你标题、评分和创作入口。低分选题不要硬写，先回到关键词、素材或策略重新调整。</p>
+
+<h2>4.3 最后看文章能不能预览</h2>
+<p>图 9：文章列表里至少要能打开预览或编辑。能预览，说明模型、模板、内容链路已经跑到可检查结果。</p>
+
+<table>
+  <colgroup><col width="180"/><col width="280"/><col width="260"/></colgroup>
+  <thead>
+    <tr><th background-color="light-gray">验收点</th><th background-color="light-gray">合格标准</th><th background-color="light-gray">失败先查哪里</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>登录后台</td><td>管理员能进入工作台</td><td>管理员初始化、密码、登录限流</td></tr>
+    <tr><td>模型配置</td><td>平台、模型、默认模型都可见</td><td>API Key、Base URL、平台启用状态</td></tr>
+    <tr><td>内容链路</td><td>能从素材进入选题，再进入文章预览</td><td>采集源、默认模型、模板和策略</td></tr>
+  </tbody>
+</table>
+
+<h1>最后交作业</h1>
+<p>这节课的作业不是“我看完了”，而是提交能证明链路跑通的材料。你只需要三张图和一句复盘，就能让别人判断是否合格。</p>
+
+<callout emoji="🗣" background-color="light-yellow" border-color="yellow">
+  <p><b>停下来讨论：</b>如果你只能提交三张截图证明系统可用，你会选哪三张？建议是登录成功页、模型配置页、一次内容预览页。讨论重点不是截图好不好看，而是它能不能证明链路真的跑通。</p>
+</callout>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue">
+  <p><b>今晚交作业：完成一次部署到使用的闭环。</b></p>
+  <checkbox done="false">我已经用 Codex 或 1WorkBuddy 跑起前端、后端、PostgreSQL 和 Redis。</checkbox>
+  <checkbox done="false">我已经登录后台，并截了一张不含密码和 Cookie 的截图。</checkbox>
+  <checkbox done="false">我已经配置 DeepSeek 平台、导入模型并保存默认模型。</checkbox>
+  <checkbox done="false">我已经用素材、选题或文章页面证明内容链路可用。</checkbox>
+  <p><b>提交方式：</b>三张截图 + 一句话复盘：“我卡在了哪里 / 我怎么判断现在已跑通”。</p>
+</callout>
+
+<callout emoji="✅" background-color="light-green" border-color="green">
+  <p><b>能力变化回收：</b>学之前，你可能只能照命令跑项目；学完后，你能把 GitHub 链接交给 Agent，要求它按 README 部署，再用登录、模型和内容结果判断系统是否真的可用。</p>
+</callout>
+
+<p>← 前置阅读：项目 README 和 backend README。下一步：使用真实 API Key、真实采集源和真实发布账号做生产环境验收。</p>
