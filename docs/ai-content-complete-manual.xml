@@ -1,181 +1,692 @@
 <title>AI Content 完整部署与使用说明书</title>
-<callout emoji="✅" background-color="light-green" border-color="green" text-color="green">
-  <p><b>这是一份从安装部署到产出内容的完整说明书。</b>你会从本地部署开始，完成管理员登录、模型配置、素材采集、选题评估、文章生成、小红书笔记、发布账号、风格模板、策略和计划任务配置。</p>
-  <p>⏱ 建议学习时间：60 到 90 分钟。🎯 最终产出：系统可登录、模型可配置、素材可查看、选题可进入创作、文章和小红书笔记可预览与分发。📋 准备：Git、Docker、Node.js、一个真实模型平台 API Key。</p>
-  <p>🖥 环境：AI Content 当前版本，macOS，2026 年 7 月 1 日。截图来自本地网页实拍，红色画笔标注了每一步要看的位置。</p>
-</callout>
+
+<callout emoji="✅" background-color="light-green" border-color="green" text-color="green"><p><b>这是一份从 README 到实际产出的完整说明书。</b>它把项目 README、部署任务单、网页实拍截图、红色画笔标注、功能说明、验收清单和排错提醒放到同一条学习线上。</p><p>阅读顺序是：先理解项目和部署入口，再登录系统，再配置模型和内容规则，最后从素材走到选题、文章、小红书笔记和发布。</p></callout>
 
 <h1>先建立全局地图</h1>
-<p>不要把 AI Content 当成一个单页工具。它更像一条内容生产线：前面把素材收进来，中间筛成选题，后面生成文章、笔记和发布任务。你理解这条线，后面的按钮就不会乱。</p>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>这是整篇教程的目录层。先看全局，再进入每个页面，否则会把配置页、生产页和发布页混在一起。</p></callout>
+
+<p><b>本章前言：</b>这一章先把教程的层级结构、系统主线和截图阅读方式讲清楚。后面每章都会按“前言 -> 分层说明 -> 注意事项 -> 截图或检查项 -> 过渡”的节奏推进。</p>
+
+<h2>总流程：从 GitHub 链接到内容产出</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>二级标题用于承载一个完整阶段，不只写按钮名称。</p></callout>
+
 <whiteboard type="mermaid">
 graph TD
-  A[部署基础服务] --> B[创建管理员]
-  B --> C[登录工作台]
-  C --> D[配置模型和采集源]
-  D --> E[采集素材]
-  E --> F[挖掘和评估选题]
-  F --> G[生成文章或笔记]
-  G --> H[预览编辑]
-  H --> I[分发或下载]
-  I --> J[计划任务持续运行]
+  A[GitHub 仓库链接] --> B[交给 Codex 或 1WorkBuddy]
+  B --> C[读取 README 并部署]
+  C --> D[登录后台]
+  D --> E[配置 AI 平台和模型]
+  E --> F[配置素材/模板/风格/策略]
+  F --> G[采集素材]
+  G --> H[挖掘选题]
+  H --> I[生成文章或小红书]
+  I --> J[预览、编辑、分发或下载]
 </whiteboard>
-<p>怎么看这张图：先看左边的部署和登录，再看中间的配置和素材，最后看右边的内容产出。任何一步失败，都不要跳过；先回到上一格确认依赖是否准备好。</p>
 
-<table>
-  <thead><tr><th background-color="light-gray">功能区</th><th background-color="light-gray">你要学会什么</th><th background-color="light-gray">对应截图</th></tr></thead>
-  <tbody>
-    <tr><td>安装部署</td><td>用 Codex 或 1WorkBuddy 把系统跑起来</td><td>命令与检查表</td></tr>
-    <tr><td>登录与工作台</td><td>进入后台，判断系统运行状态</td><td>图 1、图 2</td></tr>
-    <tr><td>配置中心</td><td>配置 AI 平台、模型、默认模型、采集源、存储</td><td>图 22 到图 28</td></tr>
-    <tr><td>内容规则</td><td>配置风格、模板、策略、发布账号、计划任务</td><td>图 13 到图 21</td></tr>
-    <tr><td>生产内容</td><td>从素材到选题，再到文章和小红书笔记</td><td>图 3 到图 12</td></tr>
-  </tbody>
-</table>
-<p>这张表是你的目录。遇到问题时，先按截图编号回到对应页面，而不是在整个系统里来回找。</p>
+<p>怎么看这张图：先看左侧的部署入口，再看中间的配置中心，最后看右侧的内容产出。任何一步失败，都回到上一节点检查依赖是否准备好。</p>
 
-<hr/>
-<h1>第一章：安装部署</h1>
-<p>这一章不是让你手动敲一长串命令，而是把仓库链接和自然语言部署目标直接交给 Codex 或 1WorkBuddy。你负责说清楚“要部署什么、部署到哪里、怎么验收、哪些密钥不能外泄”，Agent 负责读取 README、执行命令、修复启动问题并回报结果。</p>
+<h3>阅读方式：每张图都只看红色标注</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>三级标题用于具体学习动作。不要整屏乱找，先按红色编号理解入口和按钮。</p></callout>
+
+<p>截图来自本地网页实拍，红色画笔标出了要看的位置。正文会先解释为什么看这张图，再说明图中每个编号对应什么。</p>
+
+<h4>层级提醒：为什么必须看到 H1-H4</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>四级标题只用于局部检查点。它帮助你知道这一小段是在补风险、验收还是排错。</p></callout>
+
+<callout emoji="✅" background-color="light-green" border-color="green"><p><b>检查：</b>本教程已经使用 H1、H2、H3、H4 四级标题；每个层级附近都有高亮块说明注意事项。</p></callout>
+
+<table><thead><tr><th background-color="light-gray">层级</th><th background-color="light-gray">用途</th><th background-color="light-gray">读者要做什么</th></tr></thead><tbody><tr><td>H1</td><td>章节和主流程</td><td>先读本章前言，知道它接上哪一章</td></tr><tr><td>H2</td><td>阶段拆分</td><td>理解这一阶段解决什么问题</td></tr><tr><td>H3</td><td>具体操作或判断</td><td>按截图或检查项执行</td></tr><tr><td>H4</td><td>局部注意事项</td><td>确认风险、验收和排错点</td></tr></tbody></table>
+
+<p><b>承上启下：</b>全局地图解决“先后顺序”的问题。下一章把项目 README 加入教程，让部署 Agent 和人工验收都有同一份依据。</p><hr/>
+
+<h1>第一章：README 导读与 Agent 部署</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>部署不是让新手背命令，而是让 Agent 读 README、执行部署、交付可验证结果。</p></callout>
+
+<p><b>本章前言：</b>这一章把项目根 README 和 backend README 纳入教程。你会先知道 README 里哪些信息用于部署，随后把 GitHub 链接和自然语言任务单直接交给 Codex 或 1WorkBuddy。</p>
+
+<h2>1.1 README 在部署中的角色</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>README 是部署 Agent 的任务依据，不是用户手动复制命令的唯一来源。</p></callout>
+
+<p>根 README 负责讲项目用途、目录结构、本地部署、模型配置、生产安全和常用验证命令。backend README 负责讲后端环境变量、初始化、接口、安全默认值和后端验证命令。</p>
+
+<h3>1.1.1 根 README 负责全局部署</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>先读根 README，Agent 才知道前端、后端、数据库和 Redis 的整体关系。</p></callout>
+
+<h4>检查点：是否把 README 作为部署输入</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要只给 Agent 一句“帮我跑起来”。必须给仓库链接、目标、验收标准和安全边界。</p></callout>
+
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>说明：</b>根 README 已经包含功能范围、目录结构、本地部署、模型配置、生产环境注意事项和常用命令。教程后面的“附录 A”也会放入 README 原文核心内容，方便课堂直接查。</p></callout>
+
+<h3>1.1.2 backend README 负责后端细节</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>后端初始化和安全默认值都在 backend README；遗漏它会导致登录、CORS、Swagger 或模型接口排错困难。</p></callout>
+
+<h4>检查点：后端变量不能靠猜</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>DATABASE_URL、REDIS_HOST、REDIS_PORT、JWT_SECRET、CORS_ORIGIN、ENABLE_SWAGGER 都应该明确配置。</p></callout>
+
+<table><thead><tr><th background-color="light-gray">README 内容</th><th background-color="light-gray">教程中的用法</th><th background-color="light-gray">验收方式</th></tr></thead><tbody><tr><td>功能范围</td><td>知道系统包含哪些模块</td><td>能在侧边栏找到对应页面</td></tr><tr><td>本地部署</td><td>交给 Agent 作为执行依据</td><td>Agent 返回前端/后端地址</td></tr><tr><td>模型配置</td><td>配置 DeepSeek 和默认模型</td><td>能看到平台预设和在线拉取入口</td></tr><tr><td>安全默认值</td><td>约束生产环境行为</td><td>不泄露 .env、API Key 和 Cookie</td></tr></tbody></table>
+
+<h2>1.2 直接把 GitHub 链接交给 Codex</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>二级阶段从“读 README”进入“让 Agent 执行部署”。</p></callout>
+
 <p><b>仓库链接：</b>https://github.com/zhuy3075-ui/ai-content</p>
 
-<h2>方式 A：直接给 Codex 部署</h2>
-<p>Codex 适合在你当前电脑或云开发环境里直接执行。你只需要把下面这段自然语言发给 Codex，不要拆成零散命令；让它按仓库 README 和后端 README 自己完成拉取、安装、初始化、启动和验证。</p>
+<h3>1.2.1 给 Codex 的自然语言部署任务单</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>Codex 应该自己读取 README 并执行，不需要用户逐条命令遥控。</p></callout>
+
 <pre lang="text" caption="直接发给 Codex 的部署请求"><code>请部署这个项目：https://github.com/zhuy3075-ui/ai-content<br/><br/>目标：把 AI Content 在当前环境跑起来，前端、后端、PostgreSQL、Redis 都要可用。<br/>要求：先读取 README.md 和 backend/README.md，再选择最小可行部署路径。<br/>管理员：初始化一个管理员账号，密码用我稍后提供的强密码，不要写入仓库。<br/>模型：部署后先进入配置管理，确认 AI 平台预设、DeepSeek 在线拉取模型入口和默认模型配置页可见。<br/>安全：不要提交 .env、API Key、Cookie、数据库备份或任何生产凭据。<br/>验收：返回前端访问地址、后端接口地址、管理员登录方式、已执行的验证命令，以及登录页和配置管理页是否可打开。</code></pre>
-<p>Codex 回答“部署完成”以后，不要马上进入内容生产。先让它给出前端地址、后端地址、数据库迁移结果和管理员账号初始化结果，再按下面的登录截图做第一次人工验收。</p>
 
-<h2>方式 B：直接给 1WorkBuddy 部署</h2>
-<p>1WorkBuddy 适合把部署过程交给工作流 Agent。你同样只要提供 GitHub 链接和自然语言目标，让它自己拉取仓库、配置服务、启动应用并交付验收结果。</p>
+<p>这段任务单交代了仓库、目标、读取 README、管理员、模型、安全和验收。Codex 完成后，要求它返回前端地址、后端地址、初始化结果和验证命令。</p>
+
+<h4>Codex 验收注意事项</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>只说“部署完成”不算通过，必须能打开登录页并进入配置管理。</p></callout>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue"><checkbox done="false">我拿到了前端访问地址。</checkbox><checkbox done="false">我拿到了后端接口地址或健康检查结果。</checkbox><checkbox done="false">管理员账号已经初始化，且密码没有写入仓库。</checkbox><checkbox done="false">配置管理页能看到 AI 平台预设和 DeepSeek 在线拉取入口。</checkbox></callout>
+
+<h2>1.3 直接把 GitHub 链接交给 1WorkBuddy</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>1WorkBuddy 的重点是工作流交付，所以任务单要把交付物和验收写清楚。</p></callout>
+
+<h3>1.3.1 给 1WorkBuddy 的自然语言部署任务单</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>不要要求 1WorkBuddy “照命令敲”；要求它按 README 自主执行并交付结果。</p></callout>
+
 <pre lang="text" caption="直接发给 1WorkBuddy 的部署请求"><code>请部署这个 GitHub 仓库：https://github.com/zhuy3075-ui/ai-content<br/><br/>部署目标：AI Content 前端可访问，后端 API 可用，PostgreSQL 和 Redis 可用，数据库迁移完成，管理员账号已初始化。<br/>执行方式：请先阅读仓库 README 和 backend/README，按文档完成部署，不要要求我手动逐条执行命令。<br/>环境变量：根据文档准备 DATABASE_URL、REDIS_HOST、REDIS_PORT、JWT_SECRET、CORS_ORIGIN、ENABLE_SWAGGER 等必要配置。<br/>交付物：请给我前端访问地址、后端健康检查或接口地址、管理员登录入口、部署日志摘要和失败排查记录。<br/>验收标准：登录页可打开，管理员可登录，配置管理页可访问，AI 平台预设可见，DeepSeek 模型在线拉取入口可见。<br/>安全要求：不要把 .env、API Key、Cookie、数据库备份、生产密钥提交到 GitHub 或写入公开文档。</code></pre>
-<p>这段请求的价值是把成功标准写死。1WorkBuddy 执行完后，你按后面的截图逐项验收，而不是只看“部署完成”四个字。</p>
 
-<h2>方式 B：用 1WorkBuddy 部署</h2>
-<p>1WorkBuddy 适合把部署过程交给工作流 Agent。你要给它的不是一句“帮我部署”，而是一份边界清楚的任务单。</p>
-<pre lang="text" caption="给 1WorkBuddy 的任务单"><code>请部署 AI Content。<br/>目标：前端可访问，后端可用，数据库迁移完成，管理员账号已初始化。<br/>基础服务：PostgreSQL 和 Redis。<br/>后端环境变量：DATABASE_URL、REDIS_HOST、REDIS_PORT、JWT_SECRET、CORS_ORIGIN、ENABLE_SWAGGER。<br/>验收：打开登录页，管理员可登录，配置管理页可访问，AI 平台预设可见。<br/>安全要求：不要提交 .env、API Key、Cookie、数据库备份或生产凭据。</code></pre>
-<p>这段任务单的价值是把成功标准写死。1WorkBuddy 执行完后，你按后面的截图逐项验收，而不是只看“部署完成”四个字。</p>
+<h4>1WorkBuddy 验收注意事项</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>交付物必须包含地址、日志摘要、失败排查记录和安全说明。</p></callout>
 
-<callout emoji="🕳" background-color="light-yellow" border-color="yellow">
-  <p><b>我栽过的坑：</b>系统能打开，不等于能创作。真正开始写文章前，一定要先完成 AI 平台、AI 模型、默认模型、采集源和发布账号配置。否则你会在后面的“创作文章”按钮上卡住。</p>
-</callout>
+<callout emoji="✅" background-color="light-green" border-color="green"><p><b>检查：</b>部署完成后，下一步不是立刻生成内容，而是先登录后台，确认系统能进入工作台。</p></callout>
+
+<p><b>承上启下：</b>README 和部署任务单解决“怎么跑起来”的问题。下一章从登录页开始，验证部署结果是否真的能被用户使用。</p><hr/>
 
 <h1>第二章：登录后台</h1>
-<p>部署完成后，先打开前端地址。登录页只保留浅色模式，账号和密码输入框对比度更高，密码右侧可以切换显示状态。</p>
-<p><b>看图说明：</b>红色 1 是账号输入框，2 是密码输入框，3 是密码显示按钮，4 是登录按钮。你只需要用初始化管理员账号登录。</p>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>登录页是部署验收第一站，先确认账号密码输入、焦点态和登录按钮是否清晰。</p></callout>
+
+<p><b>本章前言：</b>上一章完成了部署任务交付，这一章开始用浏览器验证。登录成功，才说明前后端、数据库和认证链路至少跑通。</p>
+
+<h2>2.1 打开登录页</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>登录页只保留浅色模式，避免新手在深色/浅色切换里迷路。</p></callout>
+
+<p>图中红色 1 是账号输入框，2 是密码输入框，3 是密码显示按钮，4 是登录按钮。</p>
+
+<h3>2.1.1 输入管理员账号</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>账号来自初始化步骤，不应该写死在公开文档里。</p></callout>
+
+<h4>2.1.1.1 登录页检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>如果输入框文字发灰、边框不明显或按钮不可见，先修 UI 再继续。</p></callout>
+
 <p>[截图位：图 1：登录后台，红框标出账号、密码、密码显示和登录按钮]</p>
 
-<p>登录成功后，你会进入工作台。工作台不是写文章的地方，而是用来判断系统今天是否正常：素材有没有进来、草稿是否待发布、日志有没有报错。</p><h1>第三章：看懂工作台</h1><p><b>看图说明：</b>红色 1 是今日素材采集量，2 是七天采集趋势，3 是待发布草稿，4 是刷新数据。每天第一次进系统，先看这四处。</p>
+<p>登录成功后会进入工作台。如果失败，先检查管理员是否初始化、密码是否正确，以及是否触发 15 分钟失败限流。</p>
+
+<p><b>承上启下：</b>登录解决“能不能进系统”。下一章看工作台，判断系统是否已经有数据和待处理任务。</p><hr/>
+
+<h1>第三章：看懂工作台</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>工作台不是创作入口，而是系统运行状态仪表盘。</p></callout>
+
+<p><b>本章前言：</b>登录以后先不要急着点创作。工作台会告诉你素材、趋势、草稿和刷新状态，帮助你判断后续功能是否有输入。</p>
+
+<h2>3.1 判断系统状态</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>没有素材和草稿时，不一定是系统坏了，可能只是还没配置采集源和模型。</p></callout>
+
+<p>红色 1 是今日素材采集量，2 是七天采集趋势，3 是待发布草稿，4 是刷新数据。</p>
+
+<h3>3.1.1 查看四个关键位置</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>先看指标，再看趋势，最后看待发布和刷新。</p></callout>
+
+<h4>3.1.1.1 工作台检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>刷新后仍然没有数据时，下一步去素材管理和采集源，而不是反复刷新。</p></callout>
+
 <p>[截图位：图 2：工作台总览，红框标出核心指标、趋势图、草稿和刷新按钮]</p>
 
-<p>如果工作台没有素材或草稿，先别急着认为系统坏了。新环境通常还没有采集源或模型配置。下一步先从素材管理看原料池。</p><h1>第四章：管理素材</h1><p>素材是所有内容生产的原料。AI Content 会把采集源拿到的内容放到这里，你可以搜索、筛选状态、按平台过滤，也可以启动自动采集任务。</p><p><b>看图说明：</b>红色 1 是搜索素材，2 是自动采集任务，3 是素材标题行，4 是查看详情入口。</p>
+<p>工作台确认的是“今天有没有东西可处理”。如果这里没有输入，下一章去素材管理找原因。</p>
+
+<p><b>承上启下：</b>工作台解决“有没有运行迹象”。下一章进入素材管理，看内容生产的原料池。</p><hr/>
+
+<h1>第四章：管理素材</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>素材是内容生产的原料，后续选题、文章和笔记都依赖它。</p></callout>
+
+<p><b>本章前言：</b>前面看到工作台状态后，这一章进入素材池。你要学会搜索素材、看素材状态、打开详情，并判断素材是否值得继续挖掘。</p>
+
+<h2>4.1 素材列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>素材列表用于判断采集是否进入系统，不是最终内容页。</p></callout>
+
+<p>红色 1 是搜索素材，2 是自动采集任务，3 是素材标题行，4 是查看详情入口。</p>
+
+<h3>4.1.1 搜索和查看素材行</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>先确认素材存在，再考虑选题和创作。</p></callout>
+
+<h4>4.1.1.1 列表检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>如果没有素材，先检查采集源配置和计划任务，不要直接生成文章。</p></callout>
+
 <p>[截图位：图 3：素材管理列表，红框标出搜索、采集任务、素材行和详情入口]</p>
 
-<p>打开素材详情后，你要判断这条素材有没有继续挖掘的价值。重点看标题、正文、来源和关键词。来源链接只是溯源，不是引流入口。</p><p><b>看图说明：</b>红色 1 是素材标题，2 是正文内容，3 是浏览原文按钮。正文为空时，通常说明采集源只拿到了标题或摘要。</p>
+<p>看到素材行后，下一步打开详情，判断正文、来源和关键词是否完整。</p>
+
+<h2>4.2 素材详情</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>详情页是判断素材质量的地方。</p></callout>
+
+<p>红色 1 是素材标题，2 是正文内容，3 是浏览原文按钮。</p>
+
+<h3>4.2.1 检查标题、正文和来源</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>标题有吸引力不够，正文和来源也要能支撑后续创作。</p></callout>
+
+<h4>4.2.1.1 详情检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>正文为空或过短时，后续 AI 生成容易泛泛而谈。</p></callout>
+
 <p>[截图位：图 4：素材详情弹窗，红框标出标题、正文和浏览原文入口]</p>
 
-<p>素材看完后，下一步不是直接写文章，而是先进入精选选题库。选题决定一篇内容的角度，如果角度不清楚，后面生成再多也只是堆字。</p><h1>第五章：挖掘和评估选题</h1><p>智能挖题支持两种方式：一种是输入关键词或事件，让系统检索后生成候选选题；另一种是一键处理已有素材池。</p><p><b>看图说明：</b>红色 1 输入关键词或事件，2 点击检索并挖题，3 搜索已有选题，4 一键挖掘新选题。</p>
+<p>素材质量确认后，下一章进入精选选题库，把原料变成可创作角度。</p>
+
+<p><b>承上启下：</b>素材管理解决“原料够不够”。下一章把素材转成选题，决定内容的角度和价值。</p><hr/>
+
+<h1>第五章：挖掘和评估选题</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>选题决定内容方向，不能跳过评分和转化分析。</p></callout>
+
+<p><b>本章前言：</b>素材只是信息，选题才是内容角度。这一章先用关键词或素材池挖掘选题，再用卡片评分判断是否值得创作。</p>
+
+<h2>5.1 智能挖题</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>挖题前要有关键词或素材输入，否则 AI 只能空泛扩写。</p></callout>
+
+<p>红色 1 输入关键词或事件，2 点击检索并挖题，3 搜索已有选题，4 一键挖掘新选题。</p>
+
+<h3>5.1.1 输入关键词并检索</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>关键词越具体，候选选题越接近业务目标。</p></callout>
+
+<h4>5.1.1.1 挖题检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>第一次使用先少量测试，确认模型和默认策略有效后再批量处理。</p></callout>
+
 <p>[截图位：图 5：智能挖题区，红框标出输入框、检索按钮、搜索和一键挖掘]</p>
 
-<p>选题卡片是创作前的最后一道闸门。评分、摘要和商业转化分析能帮你判断这个题值不值得写。不要只看标题好不好听，要看是否贴合目标受众。</p><p><b>看图说明：</b>红色 1 是选题标题，2 是 AI 评分，3 是创作文章，4 是创作笔记。文章偏长内容，小红书笔记偏卡片和种草表达。</p>
+<p>系统产出候选选题后，不要立刻创作，先看选题卡片的评分和摘要。</p>
+
+<h2>5.2 选题卡片</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>选题卡片是创作前的最后一道闸门。</p></callout>
+
+<p>红色 1 是选题标题，2 是 AI 评分，3 是创作文章，4 是创作笔记。</p>
+
+<h3>5.2.1 判断评分和创作入口</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>评分、摘要和目标受众决定是否进入文章或小红书笔记创作。</p></callout>
+
+<h4>5.2.1.1 卡片检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>低分选题不要硬写，先回到策略或关键词重新挖掘。</p></callout>
+
 <p>[截图位：图 6：选题卡片，红框标出评分、创作文章和创作笔记入口]</p>
 
-<p>当你点击“创作文章”后，生成结果会进入我的文章。文章列表负责管理草稿、预览排版、复制内容和分发。这里是内容进入发布前的检查站。</p><h1>第六章：生成和管理文章</h1><p><b>看图说明：</b>红色 1 是文章搜索，2 是文章行，3 是预览排版，4 是分发入口，5 是一键复制。新手先点预览，不要直接分发。</p>
+<p>选题确认后，下一章进入文章生产链路，处理长内容的预览、编辑和分发。</p>
+
+<p><b>承上启下：</b>选题解决“写什么”。下一章开始处理“怎么写成文章”。</p><hr/>
+
+<h1>第六章：生成和管理文章</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>文章链路包含生成、预览、编辑和分发，不能只看列表。</p></callout>
+
+<p><b>本章前言：</b>选题确定后，文章会进入“我的文章”。这里是长内容发布前的检查站，要看列表、预览、编辑和分发四个环节。</p>
+
+<h2>6.1 文章列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>列表负责管理草稿，不代表内容已经适合发布。</p></callout>
+
+<p>红色 1 是文章搜索，2 是文章行，3 是预览排版，4 是分发入口，5 是一键复制。</p>
+
+<h3>6.1.1 查找文章并选择操作</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>新手先预览，再编辑，最后才分发。</p></callout>
+
+<h4>6.1.1.1 列表检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要在未预览排版前直接分发。</p></callout>
+
 <p>[截图位：图 7：我的文章列表，红框标出搜索、文章行、预览、分发和复制入口]</p>
 
-<p>预览弹窗让你在发布前看最终排版。HTML 文章会以 iframe 形式渲染，你可以检查标题、段落、图片占位和按钮是否符合预期。</p><p><b>看图说明：</b>红色 1 是文章标题，2 是预览区，3 是一键复制，4 是编辑排版，5 是立刻分发。发现错字或结构问题，先进编辑排版。</p>
+<p>列表只告诉你文章存在。下一步打开预览确认排版和内容结构。</p>
+
+<h2>6.2 文章预览</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>预览页用于判断最终阅读效果。</p></callout>
+
+<p>红色 1 是文章标题，2 是预览区，3 是一键复制，4 是编辑排版，5 是立刻分发。</p>
+
+<h3>6.2.1 检查标题和正文排版</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>标题、段落、图片占位和按钮都要符合预期。</p></callout>
+
+<h4>6.2.1.1 预览检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>发现错字、结构混乱或图片异常，先编辑，不要分发。</p></callout>
+
 <p>[截图位：图 8：文章预览弹窗，红框标出标题、预览区、复制、编辑和分发按钮]</p>
 
-<p>编辑排版有两个模式：可视化编辑适合改文字和轻量排版；源码模式适合检查 HTML 结构。普通运营不要一上来改源码，先用可视化模式。</p><p><b>看图说明：</b>红色 1 是可视化编辑，2 是源码模式，3 是编辑区，4 是保存修改。保存后再回到预览检查一次。</p>
+<p>预览发现问题时，进入编辑弹窗修改。</p>
+
+<h2>6.3 编辑文章</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>编辑分为可视化和源码，普通运营优先可视化。</p></callout>
+
+<p>红色 1 是可视化编辑，2 是源码模式，3 是编辑区，4 是保存修改。</p>
+
+<h3>6.3.1 保存修改</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>源码模式适合检查 HTML 结构，不适合随手乱改。</p></callout>
+
+<h4>6.3.1.1 编辑检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>保存后必须回到预览再看一遍。</p></callout>
+
 <p>[截图位：图 9：文章编辑弹窗，红框标出可视化编辑、源码模式、编辑区和保存按钮]</p>
 
-<p>发布前必须先配置平台账号。分发弹窗会列出可用账号，你选择账号后再确认发布。真实生产环境里，发布账号应由负责人配置和维护。</p><p><b>看图说明：</b>红色 1 是分发弹窗标题，2 是可选公众号账号，3 是确认发布按钮。没有账号时，先去“平台账号”页面配置。</p>
+<p>文章确认没问题后，才进入分发弹窗。</p>
+
+<h2>6.4 分发文章</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>分发依赖发布账号，账号未配置时不能自动发布。</p></callout>
+
+<p>红色 1 是分发弹窗标题，2 是可选公众号账号，3 是确认发布按钮。</p>
+
+<h3>6.4.1 选择发布账号</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>发布账号是内容出口，不是 AI 平台账号。</p></callout>
+
+<h4>6.4.1.1 分发检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>真实生产环境中发布账号应由管理员维护，不要把 Token 写进教程或 README。</p></callout>
+
 <p>[截图位：图 10：文章分发弹窗，红框标出发布账号和确认按钮]</p>
 
-<p>小红书笔记和文章共用选题来源，但呈现方式不同。它更像一组卡片加正文和标签，所以要特别注意预览和下载素材。</p><h1>第七章：生成小红书笔记</h1><p><b>看图说明：</b>红色 1 是搜索笔记，2 是笔记行，3 是预览入口，4 是下载入口。下载会导出笔记文案和卡片素材。</p>
+<p>文章链路到这里完成。下一章看小红书笔记，学习短图文内容的检查方式。</p>
+
+<p><b>承上启下：</b>文章链路解决“长内容怎么发布”。下一章处理“小红书笔记怎么预览和下载”。</p><hr/>
+
+<h1>第七章：生成小红书笔记</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>小红书笔记更关注正文、标签和卡片顺序。</p></callout>
+
+<p><b>本章前言：</b>文章偏长内容，小红书笔记偏图文卡片。上一章会预览文章，这一章要学会预览笔记和下载卡片素材。</p>
+
+<h2>7.1 笔记列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>笔记列表是短内容的管理入口。</p></callout>
+
+<p>红色 1 是搜索笔记，2 是笔记行，3 是预览入口，4 是下载入口。</p>
+
+<h3>7.1.1 搜索、预览和下载</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>先预览，再下载，避免导出错误卡片。</p></callout>
+
+<h4>7.1.1.1 列表检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>下载前确认标题和卡片数量。</p></callout>
+
 <p>[截图位：图 11：小红书笔记列表，红框标出搜索、笔记行、预览和下载入口]</p>
 
-<p>小红书预览页能看到正文、标签和每张卡片的角色。你要检查它是不是像一篇可发布笔记，而不只是文章内容换了个标题。</p><p><b>看图说明：</b>红色 1 是笔记标题，2 是正文和标签，3 是第一张卡片，4 是一键下载。下载前先确认卡片顺序是否正确。</p>
+<p>打开预览后检查正文、标签和卡片顺序。</p>
+
+<h2>7.2 笔记预览</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>预览页确认笔记是否像一篇可发布内容。</p></callout>
+
+<p>红色 1 是笔记标题，2 是正文和标签，3 是第一张卡片，4 是一键下载。</p>
+
+<h3>7.2.1 检查正文和卡片</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>每张卡片都要服务标题，不要只是重复正文。</p></callout>
+
+<h4>7.2.1.1 预览检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>标签过多或卡片顺序不清晰时，回到选题或风格配置调整。</p></callout>
+
 <p>[截图位：图 12：小红书笔记预览，红框标出标题、正文、卡片和下载按钮]</p>
 
-<p>前面讲的是产出内容。接下来要补齐系统配置：模板、发布账号、风格、策略和计划任务。这些配置决定 AI 生成内容时遵循什么格式和规则。</p><h1>第八章：配置文章模板</h1><p>文章模板控制 HTML 文章的结构。你可以导入已有 HTML，也可以在线新建模板。模板里最重要的是占位符，不要随手删掉。</p><p><b>看图说明：</b>红色 1 是导入 HTML，2 是新建模板，3 是已有模板。第一次使用建议先复制一个简单模板再逐步调整。</p>
+<p>笔记链路完成后，下一步回到系统配置，保证后续内容按统一模板和风格生成。</p>
+
+<p><b>承上启下：</b>小红书解决“短图文怎么交付”。下一章配置模板，让文章输出更稳定。</p><hr/>
+
+<h1>第八章：配置文章模板</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>模板控制文章结构，不能随意删除占位符。</p></callout>
+
+<p><b>本章前言：</b>前面学会了内容产出，现在回到配置。模板决定文章 HTML 骨架，适合在正式生产前先准备好。</p>
+
+<h2>8.1 模板列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>模板页维护文章结构，不是写作风格页。</p></callout>
+
+<p>红色 1 是导入 HTML，2 是新建模板，3 是已有模板。</p>
+
+<h3>8.1.1 导入或新建模板</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>首次使用建议先复制简单模板，再逐步调整。</p></callout>
+
+<h4>8.1.1.1 模板检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>模板缺少占位符时，生成内容可能无法落到正确位置。</p></callout>
+
 <p>[截图位：图 13：文章模板页，红框标出导入 HTML、新建模板和模板列表]</p>
 
-<p>新建模板时，模板名称要能说明用途，HTML 内容里保留标题、摘要、正文和图片占位符。这样 AI 生成时才知道内容往哪里放。</p><p><b>看图说明：</b>红色 1 是模板名称，2 是 HTML 内容区域，3 是保存按钮。保存后可以设为默认模板，再回文章生成链路验证。</p>
+<p>新建模板时重点看名称和 HTML 内容。</p>
+
+<h2>8.2 新建模板</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>模板名称要表达用途，HTML 内容要保留关键占位。</p></callout>
+
+<p>红色 1 是模板名称，2 是 HTML 内容区域，3 是保存按钮。</p>
+
+<h3>8.2.1 保存模板</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>保存后建议设为默认模板并生成一篇测试文章。</p></callout>
+
+<h4>8.2.1.1 新建检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要把生产密钥或外部营销链接写入模板。</p></callout>
+
 <p>[截图位：图 14：新建模板弹窗，红框标出模板名称、HTML 内容和保存按钮]</p>
 
-<h1>第九章：配置发布账号</h1><p>发布账号不是 AI 平台账号。它负责把已经生成好的文章推到公众号或其他发布渠道。没有发布账号，文章仍然可以预览和复制，但不能自动分发。</p><p><b>看图说明：</b>红色 1 是添加账号，2 是已有账号，3 是编辑入口。建议用业务名称命名账号，例如“公众号主账号”。</p>
+<p>模板解决文章结构。下一章配置发布账号，解决内容出口。</p>
+
+<p><b>承上启下：</b>模板解决“内容长什么样”。下一章配置“内容发到哪里”。</p><hr/>
+
+<h1>第九章：配置发布账号</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>发布账号是内容出口，和 AI 平台账号完全不同。</p></callout>
+
+<p><b>本章前言：</b>模板决定排版，发布账号决定发往哪里。本章配置公众号或发布服务账号，支持后续文章分发。</p>
+
+<h2>9.1 发布账号列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>账号列表展示可用发布渠道。</p></callout>
+
+<p>红色 1 是添加账号，2 是已有账号，3 是编辑入口。</p>
+
+<h3>9.1.1 添加和编辑账号</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>建议用业务名称命名账号，例如“公众号主账号”。</p></callout>
+
+<h4>9.1.1.1 账号检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>没有发布账号时，文章可以复制但不能自动分发。</p></callout>
+
 <p>[截图位：图 15：平台账号页，红框标出添加账号、账号行和编辑入口]</p>
 
-<p>添加账号时，平台类型决定发布服务会走哪套逻辑。API 地址、AppID、Token、分类 ID 都来自你的发布服务，不要把这些密钥写进 README 或截图里。</p><p><b>看图说明：</b>红色 1 是平台类型，2 是发布服务 API 地址，3 是保存设置。生产环境建议由管理员统一维护。</p>
+<p>添加账号时再填写平台类型和 API 地址。</p>
+
+<h2>9.2 添加发布账号</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>发布服务 API 地址和 Token 来自你的发布服务。</p></callout>
+
+<p>红色 1 是平台类型，2 是发布服务 API 地址，3 是保存设置。</p>
+
+<h3>9.2.1 保存发布配置</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>生产账号应由管理员统一维护。</p></callout>
+
+<h4>9.2.1.1 安全检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要把 AppID、Token、Cookie 写进 README、截图或教程。</p></callout>
+
 <p>[截图位：图 16：添加发布账号弹窗，红框标出平台类型、API 地址和保存按钮]</p>
 
-<h1>第十章：配置风格</h1><p>风格是给 AI 的长期写作偏好。你可以分别配置文章风格、小红书笔记风格和图片风格。不同内容形态最好分开，不要一个 prompt 统管所有场景。</p><p><b>看图说明：</b>红色 1 是文章风格，2 是小红书笔记风格，3 是图片风格，4 是添加风格，5 是当前默认风格。</p>
+<p>发布账号解决出口。下一章配置风格，让 AI 写作更像你的业务。</p>
+
+<p><b>承上启下：</b>发布账号解决“发到哪里”。下一章配置“用什么语气写”。</p><hr/>
+
+<h1>第十章：配置风格</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>风格是长期写作偏好，不能一个 prompt 管所有内容。</p></callout>
+
+<p><b>本章前言：</b>有了模板和发布账号后，需要控制内容表达。风格分文章、小红书和图片，不同形态要分开维护。</p>
+
+<h2>10.1 风格列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>风格列表帮助你区分文章、小红书和图片提示词。</p></callout>
+
+<p>红色 1 是文章风格，2 是小红书笔记风格，3 是图片风格，4 是添加风格，5 是当前默认风格。</p>
+
+<h3>10.1.1 选择默认风格</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>默认风格会影响后续生成结果。</p></callout>
+
+<h4>10.1.1.1 风格检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>默认风格不要太空泛，要有受众、语气和结构。</p></callout>
+
 <p>[截图位：图 17：风格管理页，红框标出文章、小红书、图片风格、添加按钮和默认风格]</p>
 
-<p>新增风格时，最重要的是提示词模板。它应该告诉模型“扮演谁、写给谁、用什么结构、避免什么”。不要只写“写得专业一点”。</p><p><b>看图说明：</b>红色 1 是弹窗标题，2 是风格名称，3 是提示词模板，4 是保存按钮。保存后再设为默认风格。</p>
+<p>新增风格时重点写提示词模板。</p>
+
+<h2>10.2 新增风格</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>提示词模板要告诉模型扮演谁、写给谁、怎么写。</p></callout>
+
+<p>红色 1 是弹窗标题，2 是风格名称，3 是提示词模板，4 是保存按钮。</p>
+
+<h3>10.2.1 保存风格</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>保存后回到列表设为默认，再生成内容验证。</p></callout>
+
+<h4>10.2.1.1 提示词检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要只写“专业一点”，要写结构、禁忌和目标读者。</p></callout>
+
 <p>[截图位：图 18：添加创作风格弹窗，红框标出名称、提示词和保存按钮]</p>
 
-<h1>第十一章：配置内容策略</h1><p>内容策略比风格更靠前。风格决定怎么写，策略决定写给谁、解决什么痛点、达成什么商业目标。选题挖掘和评分会读取默认策略。</p><p><b>看图说明：</b>红色 1 是添加策略，2 是策略行，3 是默认策略标识。一个业务方向至少准备一套策略。</p>
+<p>风格解决表达方式。下一章配置内容策略，解决业务方向。</p>
+
+<p><b>承上启下：</b>风格解决“怎么写”。下一章配置“为什么写、写给谁”。</p><hr/>
+
+<h1>第十一章：配置内容策略</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>策略比风格更靠前，决定目标人群、痛点和商业目标。</p></callout>
+
+<p><b>本章前言：</b>风格控制语言，策略控制方向。选题评分和挖掘会受默认策略影响，所以策略必须具体。</p>
+
+<h2>11.1 策略列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>策略列表用于维护业务方向。</p></callout>
+
+<p>红色 1 是添加策略，2 是策略行，3 是默认策略标识。</p>
+
+<h3>11.1.1 设置默认策略</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>一个业务方向至少准备一套策略。</p></callout>
+
+<h4>11.1.1.1 策略检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>默认策略不明确时，选题评分会失去方向。</p></callout>
+
 <p>[截图位：图 19：内容策略页，红框标出添加策略、策略行和默认策略]</p>
 
-<p>新增策略时，你要把行业、目标人群、商业目标、痛点和写作角度写具体。写得越具体，AI 评分和选题越有方向。</p><p><b>看图说明：</b>红色 1 是策略名称，2 是目标人群，3 是保存策略。保存后记得设为默认策略。</p>
+<p>新增策略时写清目标人群和痛点。</p>
+
+<h2>11.2 新增策略</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>策略字段越具体，AI 越容易判断什么值得写。</p></callout>
+
+<p>红色 1 是策略名称，2 是目标人群，3 是保存策略。</p>
+
+<h3>11.2.1 保存策略</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>保存后设为默认，再回精选选题库验证评分。</p></callout>
+
+<h4>11.2.1.1 策略检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要把“所有人”写成目标人群。越泛越难评估。</p></callout>
+
 <p>[截图位：图 20：新增内容策略弹窗，红框标出策略名称、目标人群和保存按钮]</p>
 
-<h1>第十二章：配置计划任务</h1><p>计划任务把人工点击变成定时运行。常用三类任务是自动采集素材、自动挖掘素材和自动生成文章。你可以按小时或每天固定时间运行。</p><p><b>看图说明：</b>红色 1 是自动采集素材，2 是自动挖掘素材，3 是自动生成文章，4 是保存配置。开启自动发布前，一定先选好发布账号。</p>
+<p>策略解决业务方向。下一章配置计划任务，让流程自动运行。</p>
+
+<p><b>承上启下：</b>策略解决“为什么写”。下一章处理“什么时候自动做”。</p><hr/>
+
+<h1>第十二章：配置计划任务</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>计划任务把人工点击变成定时运行，但自动发布要谨慎。</p></callout>
+
+<p><b>本章前言：</b>前面的配置都能手动运行。本章配置采集、挖掘和生成的自动化节奏，适合稳定后再开启。</p>
+
+<h2>12.1 计划任务页</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>计划任务会持续触发系统动作，先小范围测试再打开。</p></callout>
+
+<p>红色 1 是自动采集素材，2 是自动挖掘素材，3 是自动生成文章，4 是保存配置。</p>
+
+<h3>12.1.1 保存自动化配置</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>常用三类是自动采集、自动挖掘、自动生成文章。</p></callout>
+
+<h4>12.1.1.1 自动化检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>开启自动发布前，必须确认发布账号、默认模型、模板和风格都正确。</p></callout>
+
 <p>[截图位：图 21：计划任务页，红框标出采集、挖掘、生成文章和保存配置]</p>
 
-<h1>第十三章：配置 AI 平台</h1><p>AI 平台是模型调用的入口。预设平台只是帮你填 Base URL 和候选模型，不会替你保存 API Key。平台列表只显示脱敏密钥。</p><p><b>看图说明：</b>红色 1 是 AI 平台标签，2 是添加预设平台，3 是 DeepSeek 预设，4 是已保存平台。注意 API Key 只显示脱敏结果。</p>
+<p>计划任务解决节奏。下一章进入配置中心的 AI 平台，这是所有 AI 功能的入口。</p>
+
+<p><b>承上启下：</b>计划任务解决“何时运行”。下一章配置“调用哪个 AI 平台”。</p><hr/>
+
+<h1>第十三章：配置 AI 平台</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>AI 平台保存 Base URL 和 API Key，前端只能看到脱敏信息。</p></callout>
+
+<p><b>本章前言：</b>所有 AI 功能都依赖平台和模型。本章先配置平台预设，再保存 API Key。平台是通道，模型是能力。</p>
+
+<h2>13.1 AI 平台列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>预设平台只填常用配置，不会替你保存密钥。</p></callout>
+
+<p>红色 1 是 AI 平台标签，2 是添加预设平台，3 是 DeepSeek 预设，4 是已保存平台。</p>
+
+<h3>13.1.1 选择预设或添加平台</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>平台列表只显示 hasApiKey 和 apiKeyMasked。</p></callout>
+
+<h4>13.1.1.1 密钥检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>编辑已有平台时 API Key 留空表示保留旧密钥。</p></callout>
+
 <p>[截图位：图 22：AI 平台配置，红框标出预设、添加平台和已脱敏的平台密钥]</p>
 
-<p>使用预设平台时，平台名称和 Base URL 会自动填好，你只需要补 API Key。编辑已有平台时，API Key 留空表示保留旧密钥。</p><p><b>看图说明：</b>红色 1 是弹窗标题，2 是平台名称，3 是 Base URL，4 是 API Key，5 是预设模型，6 是保存按钮。</p>
+<p>选择预设后打开弹窗补 API Key。</p>
+
+<h2>13.2 预设平台弹窗</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>预设会填平台名称、Base URL 和候选模型。</p></callout>
+
+<p>红色 1 是弹窗标题，2 是平台名称，3 是 Base URL，4 是 API Key，5 是预设模型，6 是保存按钮。</p>
+
+<h3>13.2.1 保存平台</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>保存前确认 Base URL 和协议类型。</p></callout>
+
+<h4>13.2.1.1 平台检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要在截图、教程或 README 中展示真实 API Key。</p></callout>
+
 <p>[截图位：图 23：预设平台弹窗，红框标出名称、Base URL、API Key、预设模型和保存按钮]</p>
 
-<h1>第十四章：配置 AI 模型</h1><p>平台只是通道，模型才是具体能力。AI 模型页可以手动添加模型，也可以对 DeepSeek 等 OpenAI 兼容平台在线拉取可用模型列表。</p><p><b>看图说明：</b>红色 1 是 AI 模型标签，2 是在线拉取模型，3 是添加模型，4 是已导入模型。模型 ID 必须和平台实际支持的 ID 一致。</p>
+<p>平台保存后，下一章进入模型配置，拉取或导入具体模型。</p>
+
+<p><b>承上启下：</b>AI 平台解决“从哪里调用”。下一章解决“调用哪个模型”。</p><hr/>
+
+<h1>第十四章：配置 AI 模型</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>模型 ID 必须和平台真实支持的 ID 一致。</p></callout>
+
+<p><b>本章前言：</b>平台只是通道，模型才是具体能力。本章学习手动添加、在线拉取和批量导入。</p>
+
+<h2>14.1 AI 模型列表</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>模型列表决定系统有哪些可选模型。</p></callout>
+
+<p>红色 1 是 AI 模型标签，2 是在线拉取模型，3 是添加模型，4 是已导入模型。</p>
+
+<h3>14.1.1 在线拉取或添加模型</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>DeepSeek 等 OpenAI 兼容平台可通过后端请求 /models。</p></callout>
+
+<h4>14.1.1.1 模型检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>前端不接收明文 API Key，拉取由后端完成。</p></callout>
+
 <p>[截图位：图 24：AI 模型配置，红框标出在线拉取、添加模型和已导入模型]</p>
 
-<p>在线拉取模型时，后端使用已保存的平台密钥请求远端 /models 接口，前端不会拿到明文 API Key。拉取成功后，勾选模型并批量导入。</p><p><b>看图说明：</b>红色 1 是弹窗标题，2 是选择平台，3 是拉取列表，4 是导入已选模型。真实使用时需要有效 API Key。</p>
+<p>点击在线拉取后，选择平台并导入模型。</p>
+
+<h2>14.2 在线拉取模型</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>远程模型列表依赖平台已保存有效密钥。</p></callout>
+
+<p>红色 1 是弹窗标题，2 是选择平台，3 是拉取列表，4 是导入已选模型。</p>
+
+<h3>14.2.1 勾选并批量导入</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>已存在的 platformId + modelId 会跳过。</p></callout>
+
+<h4>14.2.1.1 拉取检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>拉取失败时先看 API Key、Base URL 和平台协议。</p></callout>
+
 <p>[截图位：图 25：在线拉取模型弹窗，红框标出平台选择、拉取列表和导入按钮]</p>
 
-<h1>第十五章：配置默认模型</h1><p>默认模型决定系统在不同任务里自动用哪个模型。至少要配置文章创作模型和精选选题模型，否则内容生产链路会频繁中断。</p><p><b>看图说明：</b>红色 1 是默认模型配置，2 是文章创作模型，3 是精选选题模型，4 是保存配置。图片、采集相关模型按需要补齐。</p>
+<p>模型导入后，下一章设置默认模型，把能力分配给具体任务。</p>
+
+<p><b>承上启下：</b>模型配置解决“有什么能力”。下一章解决“每个任务默认用哪个能力”。</p><hr/>
+
+<h1>第十五章：配置默认模型</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>默认模型是内容生产链路的自动选择规则。</p></callout>
+
+<p><b>本章前言：</b>导入模型后，如果不配置默认模型，创作文章、挖掘选题等流程仍可能失败。本章把模型分配给任务。</p>
+
+<h2>15.1 默认模型配置</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>至少配置文章创作模型和精选选题模型。</p></callout>
+
+<p>红色 1 是默认模型配置，2 是文章创作模型，3 是精选选题模型，4 是保存配置。</p>
+
+<h3>15.1.1 保存默认模型</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>不同任务可用不同模型，减少成本和失败率。</p></callout>
+
+<h4>15.1.1.1 默认模型检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>保存后回到选题或文章页做一次小规模验证。</p></callout>
+
 <p>[截图位：图 26：默认模型配置，红框标出文章模型、选题模型和保存按钮]</p>
 
-<h1>第十六章：配置采集源</h1><p>采集源决定素材从哪里来。系统支持 RSS、API、爬虫等类型。首次使用可以初始化默认源，再按业务删除或禁用不需要的来源。</p><p><b>看图说明：</b>红色 1 是内容采集源配置，2 是初始化默认源，3 是信息源列表，4 是爬虫基础设置。代理地址只在你需要特定网络环境时填写。</p>
+<p>默认模型保存后，下一章配置采集源，保证系统有源源不断的素材。</p>
+
+<p><b>承上启下：</b>默认模型解决“谁来执行任务”。下一章解决“素材从哪里来”。</p><hr/>
+
+<h1>第十六章：配置采集源</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>采集源决定素材入口，首次使用可初始化默认源。</p></callout>
+
+<p><b>本章前言：</b>模型能生成内容，但必须先有素材输入。本章配置 RSS、API、爬虫等来源，并确认采集基础设置。</p>
+
+<h2>16.1 内容采集源</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>采集源启用后，素材才会进入素材管理。</p></callout>
+
+<p>红色 1 是内容采集源配置，2 是初始化默认源，3 是信息源列表，4 是爬虫基础设置。</p>
+
+<h3>16.1.1 初始化和检查源列表</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>首次使用先初始化默认源，再按业务增删。</p></callout>
+
+<h4>16.1.1.1 采集检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>代理地址只在特定网络环境需要，不要随意填写。</p></callout>
+
 <p>[截图位：图 27：采集源配置，红框标出默认源初始化、信息源和爬虫基础设置]</p>
 
-<h1>第十七章：配置对象存储</h1><p>对象存储用于保存文章配图、小红书卡图和封面图片。没有对象存储时，文本功能仍可用，但图片上传和长期访问会受影响。</p><p><b>看图说明：</b>红色 1 是对象存储配置，2 是 Access Key，3 是测试连接，4 是保存配置。密钥不要写进文档或截图，生产环境用环境变量和权限隔离。</p>
+<p>采集源配置后，下一章配置对象存储，支撑图片和封面长期访问。</p>
+
+<p><b>承上启下：</b>采集源解决“内容从哪里来”。下一章解决“图片和封面放哪里”。</p><hr/>
+
+<h1>第十七章：配置对象存储</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>对象存储负责图片、封面和卡图的长期访问。</p></callout>
+
+<p><b>本章前言：</b>文本功能不一定依赖对象存储，但图片上传、封面图和小红书卡片需要稳定存储。本章配置 Access Key、测试连接和保存。</p>
+
+<h2>17.1 存储配置</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>对象存储属于敏感配置，截图和教程不能泄露真实密钥。</p></callout>
+
+<p>红色 1 是对象存储配置，2 是 Access Key，3 是测试连接，4 是保存配置。</p>
+
+<h3>17.1.1 测试连接并保存</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>先测试连接，再保存配置。</p></callout>
+
+<h4>17.1.1.1 存储检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>Access Key 和 Secret 只能进入后端配置或管理页，不进入公开仓库。</p></callout>
+
 <p>[截图位：图 28：对象存储配置，红框标出对象存储、Access Key、测试连接和保存配置]</p>
-<hr/>
-<h1>第十八章：一条完整使用路径</h1>
-<p>如果你是第一次使用，不要从“写文章”开始。按下面顺序走，成功率最高。</p>
-<ol>
-  <li seq="auto">部署系统，创建管理员，登录后台。</li>
-  <li seq="auto">进入配置管理，添加 AI 平台、导入模型、保存默认模型。</li>
-  <li seq="auto">配置采集源、对象存储、发布账号、风格、模板和内容策略。</li>
-  <li seq="auto">进入素材管理，确认素材已经进入系统。</li>
-  <li seq="auto">进入精选选题库，评估选题，再选择创作文章或小红书笔记。</li>
-  <li seq="auto">进入我的文章或小红书笔记，预览、编辑、复制、下载或分发。</li>
-  <li seq="auto">最后配置计划任务，让采集、挖掘和生成按固定频率运行。</li>
-</ol>
-<table>
-  <thead><tr><th background-color="light-gray">你看到的问题</th><th background-color="light-gray">先检查哪里</th><th background-color="light-gray">判断标准</th></tr></thead>
-  <tbody>
-    <tr><td>登录失败</td><td>管理员账号和失败限流</td><td>账号存在，15 分钟内错误次数未超限</td></tr>
-    <tr><td>创作按钮失败</td><td>AI 平台、AI 模型、默认模型</td><td>平台启用，模型可用，默认模型已保存</td></tr>
-    <tr><td>没有素材</td><td>采集源和自动采集任务</td><td>采集源启用，任务运行，无网络错误</td></tr>
-    <tr><td>不能分发</td><td>平台账号</td><td>发布账号存在，API 地址和 Token 有效</td></tr>
-    <tr><td>图片不能访问</td><td>对象存储</td><td>测试连接成功，CDN 域名可访问</td></tr>
-  </tbody>
-</table>
 
-<callout emoji="📝" background-color="light-blue" border-color="blue">
-  <p><b>今晚交作业：完成一次从部署到内容产出的闭环。</b></p>
-  <checkbox done="false">我已经用 Codex 或 1WorkBuddy 跑起前后端和数据库。</checkbox>
-  <checkbox done="false">我已经登录后台，并能看到工作台数据。</checkbox>
-  <checkbox done="false">我已经添加一个 AI 平台、一个模型，并保存默认模型。</checkbox>
-  <checkbox done="false">我已经确认素材、选题、文章和小红书笔记至少有一个页面能打开并预览。</checkbox>
-  <checkbox done="false">我已经配置发布账号或说明当前为什么暂不自动分发。</checkbox>
-  <p><b>提交方式：</b>发 3 张截图：登录后的工作台、配置中心默认模型、文章或小红书预览页。</p>
-</callout>
+<p>存储配置完成后，系统从部署、配置到内容生产的闭环已经具备。</p>
 
-<callout emoji="✅" background-color="light-green" border-color="green">
-  <p><b>能力回收：</b>学之前，你只能把系统跑起来；学完后，你能把它配置成一条可持续内容生产线，并知道每个功能页在生产链路里负责什么。</p>
-</callout>
-<p>← 前置阅读：项目 README。下一步：使用真实 API Key、真实采集源和真实发布账号完成生产环境验收。</p>
+<p><b>承上启下：</b>对象存储解决“图片放哪里”。下一章把 README 原文核心内容放进教程，方便课堂查阅和 Agent 复用。</p><hr/>
+
+<h1>第十八章：README 原文核心内容</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>README 是部署和二次维护的依据，本章把项目 README 放入教程，便于课堂直接查。</p></callout>
+
+<p><b>本章前言：</b>前面教程已经按页面和功能讲完。本章回到项目文档，把根 README 和 backend README 的原文核心内容加入教程，便于给 Codex、1WorkBuddy 或人工维护者作为上下文。</p>
+
+<h2>18.1 根 README.md</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>根 README 面向整体项目，适合作为 Agent 部署的第一份材料。</p></callout>
+
+<h3>18.1.1 README 覆盖范围</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>重点看功能范围、目录结构、本地部署、模型配置和生产环境注意事项。</p></callout>
+
+<h4>18.1.1.1 使用注意</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>README 里的命令是 Agent 的执行依据，不是让教程读者手动逐条复制。</p></callout>
+
+<pre lang="markdown" caption="README.md 原文核心内容"><code># AI Content<br/><br/>AI Content 是一个本地部署的内容生产后台，包含素材采集、选题挖掘、文章生成、图文管理、发布账号配置和模型配置。当前版本仅保留浅色界面，登录页和模型设置页已针对可读性与安全性做过整理。<br/><br/>## 功能范围<br/><br/>- 素材管理：采集、筛选、查看、批量删除素材。<br/>- 选题管理：基于素材生成候选选题和商业转化分析。<br/>- 文章管理：生成文章、小红书笔记、封面图和正文配图。<br/>- 模板与风格：维护文章模板、写作风格和内容策略。<br/>- 模型配置：支持平台预设、DeepSeek 在线拉取模型列表、模型批量导入和默认模型分配。<br/>- 发布配置：发布账号需要显式填写第三方 API 地址，不再内置默认外链。<br/><br/>## 目录结构<br/><br/>```text<br/>.<br/>├── backend          # NestJS API、Prisma、队列与后台任务<br/>├── frontend         # Next.js 管理后台<br/>├── scripts          # 初始化与首轮检查脚本<br/>├── docker-compose.yml<br/>└── LICENSE<br/>```<br/><br/>## 本地部署<br/><br/>### 1. 获取代码<br/><br/>```bash<br/>git clone https://github.com/zhuy3075-ui/ai-content.git<br/>cd ai-content<br/>```<br/><br/>### 2. 启动数据库和 Redis<br/><br/>```bash<br/>docker compose up -d postgres redis<br/>```<br/><br/>默认开发数据库连接为：<br/><br/>```text<br/>postgresql://postgres:postgres@localhost:5432/ai_content<br/>```<br/><br/>### 3. 配置并启动后端<br/><br/>```bash<br/>cd backend<br/>cp .env.example .env<br/>npm ci<br/>npm run db:init<br/>npm run db:bootstrap-admin -- --username admin --password '&lt;至少8位密码&gt;' --email admin@example.com --name 管理员<br/>npm run start:dev<br/>```<br/><br/>后端默认监听 `3001` 端口。开发环境默认开放 Swagger；生产环境默认关闭，只有设置 `ENABLE_SWAGGER=true` 才会启用。<br/><br/>### 4. 配置并启动前端<br/><br/>另开一个终端：<br/><br/>```bash<br/>cd frontend<br/>cp .env.example .env<br/>npm ci<br/>npm run dev<br/>```<br/><br/>前端默认监听 `3000` 端口，`.env.example` 中的 `NEXT_PUBLIC_API_BASE` 指向本机后端。<br/><br/>### 5. 首次运行检查<br/><br/>```bash<br/>./scripts/check-first-run.sh<br/>```<br/><br/>检查项包括管理员账号、AI 平台、AI 模型、默认模型和信息源配置。<br/><br/>## 模型配置<br/><br/>1. 登录后台后进入「配置管理」。<br/>2. 在「AI 平台」中点击预设平台，选择 DeepSeek、OpenAI 兼容平台或自定义平台。<br/>3. 填写平台名称、Base URL 和 API Key。平台列表只显示脱敏后的密钥，不会把明文密钥返回前端。<br/>4. 在「AI 模型」中点击「在线拉取模型」，选择已配置 API Key 的平台。<br/>5. DeepSeek 等 OpenAI 兼容平台会由后端调用 `/models`，前端只接收模型 ID 列表。<br/>6. 勾选模型并批量导入；已存在的模型会自动跳过。<br/>7. 在「默认模型」中为文章创作、选题推荐等功能分配模型。<br/><br/>## 生产环境注意事项<br/><br/>- 不要提交 `.env`、数据库备份、API Key 或 Cookie。<br/>- 生产环境必须显式设置 `CORS_ORIGIN`，不再默认放行本地调试地址。<br/>- 生产环境 Swagger 默认关闭。如需临时排查，设置 `ENABLE_SWAGGER=true` 后再开启，并在排查后关闭。<br/>- 后台没有默认管理员。必须用初始化脚本创建首个账号。<br/>- 登录失败按 `IP + username` 做 15 分钟 5 次失败限流。<br/>- API Key 只在创建或更新时写入后端；更新平台时留空会保留旧密钥。<br/><br/>## 常用命令<br/><br/>```bash<br/># 后端<br/>cd backend<br/>npm test -- --runInBand --forceExit<br/>npm run build<br/>npm audit --omit=dev<br/><br/># 前端<br/>cd frontend<br/>npm run lint<br/>npm run build<br/>npm audit --omit=dev<br/>```<br/><br/>## 许可<br/><br/>分发或二次开发时请保留仓库中的 `LICENSE` 文件。<br/></code></pre>
+
+<h2>18.2 backend/README.md</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>backend README 面向后端部署、环境变量和安全默认值。</p></callout>
+
+<h3>18.2.1 后端 README 覆盖范围</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>重点看环境变量、初始化、模型接口、安全默认值和验证命令。</p></callout>
+
+<h4>18.2.1.1 使用注意</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>后端 README 中的变量不要用生产真实值替换后再提交。</p></callout>
+
+<pre lang="markdown" caption="backend/README.md 原文核心内容"><code># AI Content Backend<br/><br/>后端基于 NestJS、Prisma、PostgreSQL 和 Redis，提供认证、素材采集、选题、文章、模型配置、发布配置和对象存储接口。<br/><br/>## 环境变量<br/><br/>复制示例文件：<br/><br/>```bash<br/>cp .env.example .env<br/>```<br/><br/>主要变量：<br/><br/>```text<br/>NODE_ENV=development<br/>PORT=3001<br/>DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ai_content<br/>REDIS_HOST=localhost<br/>REDIS_PORT=6379<br/>CORS_ORIGIN=http://localhost:3000,http://127.0.0.1:3000<br/>ENABLE_SWAGGER=false<br/>AUTH_COOKIE_NAME=ai_content_session<br/>AUTH_SESSION_DAYS=14<br/>```<br/><br/>生产环境建议：<br/><br/>- `NODE_ENV=production`<br/>- `CORS_ORIGIN` 只填写真实前端域名<br/>- `ENABLE_SWAGGER=false`<br/>- 使用强数据库密码和独立 Redis 实例<br/><br/>## 初始化<br/><br/>```bash<br/>npm ci<br/>npm run db:init<br/>npm run db:bootstrap-admin -- --username admin --password '&lt;至少8位密码&gt;' --email admin@example.com --name 管理员<br/>npm run setup:check<br/>```<br/><br/>`db:bootstrap-admin` 只允许在系统没有任何用户时创建首个后台账号。<br/><br/>## 启动<br/><br/>```bash<br/>npm run start:dev<br/>```<br/><br/>构建生产包：<br/><br/>```bash<br/>npm run build<br/>npm run start:prod<br/>```<br/><br/>## 模型接口<br/><br/>- `GET /api/ai-platforms/presets`：返回平台、协议和能力预设，不包含密钥。<br/>- `GET /api/ai-platforms/:id/remote-models`：使用后端保存的密钥拉取远端模型列表。<br/>- `POST /api/ai-models/bulk`：批量导入模型，已存在的 `(platformId, modelId)` 会跳过。<br/><br/>平台列表和模型列表中的平台对象只返回 `hasApiKey` 和 `apiKeyMasked`。更新平台时如果 `apiKey` 为空字符串，后端会保留原密钥。<br/><br/>## 安全默认值<br/><br/>- 全局 `ValidationPipe` 开启 `whitelist` 和 `forbidNonWhitelisted`。<br/>- 登录失败按 `IP + username` 做 15 分钟 5 次失败限流。<br/>- 生产环境 Swagger 默认关闭，需显式设置 `ENABLE_SWAGGER=true`。<br/>- 生产环境 CORS 不再默认放行本地调试地址。<br/>- 发布账号不再内置默认第三方 API 地址，必须由用户显式配置。<br/><br/>## 验证命令<br/><br/>```bash<br/>npm test -- --runInBand --forceExit<br/>npm run build<br/>npm audit --omit=dev<br/>```<br/><br/>`--forceExit` 用于规避原有测试中的开放句柄等待；测试断言本身应全部通过。<br/></code></pre>
+
+<p><b>承上启下：</b>README 附录解决“资料在哪里查”。最后一章把从部署到内容产出的完整路径收束成检查清单。</p><hr/>
+
+<h1>第十九章：完整使用路径与最终验收</h1>
+<callout emoji="ℹ️" background-color="light-blue" border-color="blue"><p><b>注意：</b>最终章用于把所有页面串成一次可交付闭环。</p></callout>
+
+<p><b>本章前言：</b>你已经看完部署、登录、配置和内容生产页面。最后一章把它们收束成一条路径，帮助你判断系统是否真的能从素材走到内容产出。</p>
+
+<h2>19.1 一条完整路径</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>完整路径必须从部署开始，到内容预览或分发结束。</p></callout>
+
+<h3>19.1.1 按顺序执行</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>顺序错了会导致创作按钮失败或没有素材。</p></callout>
+
+<h4>19.1.1.1 路径检查点</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>如果某一步失败，回到上一章对应截图检查配置。</p></callout>
+
+<ol><li seq="auto">把 GitHub 链接和自然语言部署任务单交给 Codex 或 1WorkBuddy。</li><li seq="auto">登录后台，确认工作台能打开。</li><li seq="auto">配置 AI 平台、AI 模型和默认模型。</li><li seq="auto">配置模板、风格、策略、发布账号、计划任务、采集源和对象存储。</li><li seq="auto">进入素材管理，确认素材进入系统。</li><li seq="auto">进入精选选题库，评估选题并选择创作文章或小红书笔记。</li><li seq="auto">进入我的文章或小红书笔记，预览、编辑、复制、下载或分发。</li></ol>
+
+<h2>19.2 常见问题排查</h2>
+<callout emoji="⚠️" background-color="light-yellow" border-color="yellow"><p><b>注意：</b>排错先按依赖链检查，不要只看当前页面。</p></callout>
+
+<table><thead><tr><th background-color="light-gray">你看到的问题</th><th background-color="light-gray">先检查哪里</th><th background-color="light-gray">判断标准</th></tr></thead><tbody><tr><td>登录失败</td><td>管理员账号和失败限流</td><td>账号存在，15 分钟内错误次数未超限</td></tr><tr><td>创作按钮失败</td><td>AI 平台、AI 模型、默认模型</td><td>平台启用，模型可用，默认模型已保存</td></tr><tr><td>没有素材</td><td>采集源和自动采集任务</td><td>采集源启用，任务运行，无网络错误</td></tr><tr><td>不能分发</td><td>平台账号</td><td>发布账号存在，API 地址和 Token 有效</td></tr><tr><td>图片不能访问</td><td>对象存储</td><td>测试连接成功，CDN 域名可访问</td></tr></tbody></table>
+
+<h3>19.2.1 最后交作业</h3>
+<callout emoji="💡" background-color="light-gray" border-color="gray"><p><b>注意：</b>最终验收要能截图证明，而不是口头说完成。</p></callout>
+
+<h4>19.2.1.1 提交注意</h4>
+<callout emoji="❗" background-color="light-red" border-color="red"><p><b>注意：</b>不要提交包含真实密钥、Cookie、Token 的截图。</p></callout>
+
+<callout emoji="📝" background-color="light-blue" border-color="blue"><checkbox done="false">我已经用 Codex 或 1WorkBuddy 跑起前后端和数据库。</checkbox><checkbox done="false">我已经登录后台，并能看到工作台数据。</checkbox><checkbox done="false">我已经添加一个 AI 平台、一个模型，并保存默认模型。</checkbox><checkbox done="false">我已经确认素材、选题、文章和小红书笔记至少有一个页面能打开并预览。</checkbox><checkbox done="false">我已经配置发布账号或说明当前为什么暂不自动分发。</checkbox><checkbox done="false">我已经阅读 README 附录，知道后续维护该从哪里查。</checkbox></callout>
+
+<callout emoji="✅" background-color="light-green" border-color="green"><p><b>能力回收：</b>学之前，你可能只会把系统跑起来；学完后，你能把 GitHub 链接交给 Agent 部署，把 README 作为部署依据，把后台配置成一条可持续内容生产线，并知道每个页面在链路里负责什么。</p></callout>
+
+<p>← 前置阅读：第十八章 README 原文核心内容。下一步：使用真实 API Key、真实采集源和真实发布账号完成生产环境验收。</p>
