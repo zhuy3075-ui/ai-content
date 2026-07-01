@@ -164,7 +164,7 @@ export default function StrategiesPage() {
                 </Button>
             </header>
 
-            <Card className="bg-background/60 dark:bg-content1/80 backdrop-blur-md shadow-medium border-small border-white/10">
+            <Card className="bg-background/60 backdrop-blur-md shadow-medium border-small border-white/10">
                 <CardHeader className="px-6 pt-6 pb-2 flex flex-col items-start gap-2">
                     <h3 className="text-medium font-bold text-default-900">策略列表</h3>
                     <p className="text-small text-default-500">建议为不同业务方向准备不同策略，但始终只保留一个默认策略供系统自动使用。</p>

@@ -28,7 +28,7 @@ export class AiClientService {
     }
 
     // 自动修正并兼容中转平台的 Base URL 填写形式
-    // 很多平台会写成 https://api.xxx.com/v1 或者 https://api.xxx.com/v1/chat/completions
+    // 很多平台会把 Base URL 写到 API 版本路径，或者误写到 /chat/completions。
     // openai sdk 内部会自动在 baseURL 后面追加 /chat/completions
     let safeBaseUrl = platform.baseUrl.trim();
     if (safeBaseUrl.endsWith('/chat/completions')) {
@@ -38,7 +38,7 @@ export class AiClientService {
     safeBaseUrl = safeBaseUrl.replace(/\/$/, '');
 
     // 如果没有自带 /v1 且没有说明具体版本路径（通常用于判断那些忘记写 v1 的），由于无法 100% 确定，这里只把明确错误的后缀移除，尽量相信用户的输入
-    // 官方的标准是 baseURL 指向到 API 版本这一级，比如 https://api.openai.com/v1
+    // OpenAI 兼容 SDK 通常要求 baseURL 指向到 API 版本路径。
 
     const client = new OpenAI({
       apiKey: platform.apiKey,

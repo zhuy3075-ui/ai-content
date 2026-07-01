@@ -11,7 +11,6 @@ const config: Config = {
     theme: {
         extend: {},
     },
-    darkMode: "class",
     plugins: [
         heroui({
             themes: {
@@ -34,32 +33,6 @@ const config: Config = {
                             foreground: "#ffffff",
                         },
                         focus: "#006FEE",
-                    },
-                },
-                dark: {
-                    colors: {
-                        background: "#000000", // 保持纯黑作为基础，靠 CSS 径向渐变来做空间感
-                        foreground: "#ECEDEE",
-                        // 卡片底色调整，增加与纯黑背景的区别度
-                        content1: "#18181b", // zinc-900 (卡片主要颜色)
-                        content2: "#27272a", // zinc-800
-                        content3: "#3f3f46", // zinc-700
-                        content4: "#52525b", // zinc-600
-                        primary: {
-                            50: "#001731",
-                            100: "#002e62",
-                            200: "#004493",
-                            300: "#005bc4",
-                            400: "#006FEE",
-                            500: "#004493", // 在深色模式下按钮可以稍微暗一点或者保持明亮
-                            600: "#338ef7",
-                            700: "#66aaf9",
-                            800: "#99c7fb",
-                            900: "#cce3fd",
-                            DEFAULT: "#006FEE", // 蓝色原色
-                            foreground: "#ffffff",
-                        },
-                        focus: "#338ef7",
                     },
                 },
             },

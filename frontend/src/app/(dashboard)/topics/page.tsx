@@ -263,7 +263,7 @@ export default function TopicsPage() {
                             base: "w-full md:max-w-[200px]",
                             mainWrapper: "h-full",
                             input: "text-small",
-                            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
+                            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20",
                         }}
                         placeholder="搜索选题名称..."
                         size="sm"
@@ -398,7 +398,7 @@ const TopicCard = ({
     ];
 
     return (
-        <Card className="bg-background/60 dark:bg-content1/80 backdrop-blur-md shadow-medium border-small border-white/10 flex flex-col h-full hover:border-primary/50 transition-colors">
+        <Card className="bg-background/60 backdrop-blur-md shadow-medium border-small border-white/10 flex flex-col h-full hover:border-primary/50 transition-colors">
             <CardHeader className="flex flex-col items-start gap-2 p-5 pb-3">
                 <div className="flex w-full justify-between items-start gap-3">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -453,8 +453,8 @@ const TopicCard = ({
                         </p>
 
                         {isCompleted && topic.reasoning && (
-                            <div className="bg-warning/10 dark:bg-warning/5 border-l-3 border-warning p-3 rounded-r-medium">
-                                <p className="text-tiny text-warning-700 dark:text-warning-500 font-medium">✨ 商业转化分析</p>
+                                <div className="bg-warning/10 border-l-3 border-warning p-3 rounded-r-medium">
+                                    <p className="text-tiny text-warning-700 font-medium">✨ 商业转化分析</p>
                                 <p className="text-small text-default-700 mt-1 line-clamp-3 leading-snug">
                                     {topic.reasoning}
                                 </p>

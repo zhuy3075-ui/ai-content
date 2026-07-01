@@ -24,11 +24,13 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() body: { username?: string; password?: string },
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.login({
       username: body.username || '',
       password: body.password || '',
+      ipAddress: this.getRequestIp(request),
     });
 
     response.cookie(AUTH_COOKIE_NAME, result.sessionToken, {
@@ -63,5 +65,12 @@ export class AuthController {
   @Get('me')
   getMe(@Req() request: AuthenticatedRequest) {
     return request.authUser;
+  }
+
+  private getRequestIp(request: Request) {
+    const forwardedFor = request.headers['x-forwarded-for'];
+    const forwardedValue = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+    const forwardedIp = forwardedValue?.split(',')[0]?.trim();
+    return forwardedIp || request.ip || request.socket.remoteAddress || 'unknown';
   }
 }

@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AiModelsService } from './ai-models.service';
 import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
+import { BulkCreateModelsDto } from './dto/bulk-create-models.dto';
 
 @ApiTags('AI 模型管理')
 @Controller('ai-models')
@@ -26,6 +27,12 @@ export class AiModelsController {
   @ApiOperation({ summary: '创建 AI 模型' })
   create(@Body() dto: CreateModelDto) {
     return this.service.create(dto);
+  }
+
+  @Post('bulk')
+  @ApiOperation({ summary: '批量导入 AI 模型' })
+  bulkCreate(@Body() dto: BulkCreateModelsDto) {
+    return this.service.bulkCreate(dto);
   }
 
   @Post('test')

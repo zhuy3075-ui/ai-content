@@ -63,11 +63,14 @@ export class PublishingService {
                 }
 
                 const config = (account.config as Record<string, any>) || {};
+                if (!config.apiUrl) {
+                    throw new BadRequestException('微信发布需要配置第三方 API 地址');
+                }
 
                 result = await this.wechatPublisher.publish({
                     apiToken: account.apiToken,
                     authorizerAppid: account.appId,
-                    apiUrl: config.apiUrl || 'https://mp.idouq.com/api/open/article',
+                    apiUrl: config.apiUrl,
                     title: article.title,
                     markdownContent: article.contentFormat === 'markdown' ? article.content : undefined,
                     htmlContent: article.finalHtml || (article.contentFormat === 'html' ? article.content : undefined),

@@ -1,0 +1,188 @@
+<title>AI Content 部署与使用教程</title>
+
+<callout emoji="✅" background-color="light-green" border-color="green" text-color="green">
+  <p><b>这篇教程带你完成一件事：</b>把 AI Content 跑起来，登录后台，配置 DeepSeek 平台，并把可用模型导入到系统里。</p>
+  <p>⏱ 时间：约 35 分钟。🎯 目标：本地可访问、可登录、可配置模型。📋 准备：Git、Node.js、Docker、一个可用的模型平台 API Key。</p>
+  <p>🖥 环境：AI Content 当前版本，macOS，2026 年 7 月 1 日。</p>
+</callout>
+
+<h1>先看全流程</h1>
+<p>你先把系统跑起来，再创建管理员账号，最后进后台配置模型。这样做的好处是：每一步都有可验证结果，哪里失败就回到对应节点排查。</p>
+
+<whiteboard type="mermaid">
+graph TD
+  A[获取代码] --> B[启动数据库和 Redis]
+  B --> C[初始化数据库]
+  C --> D[创建管理员]
+  D --> E[启动前端和后端]
+  E --> F[登录后台]
+  F --> G[添加 DeepSeek 平台]
+  G --> H[在线拉取模型]
+  H --> I[设置默认模型]
+</whiteboard>
+
+<p>怎么看这张图：先看左边的部署链路，再看右边的模型配置链路。只要某一步没有看到预期结果，就不要跳到下一步。</p>
+
+<hr/>
+
+<h1>步骤 1：用 Codex 方式部署</h1>
+<p>Codex 方式适合你在本机或远程开发机上直接操作仓库。先把代码拿到本地，再启动数据库服务。</p>
+
+<pre lang="bash" caption="拉取代码"><code>git clone https://github.com/zhuy3075-ui/ai-content.git
+cd ai-content</code></pre>
+
+<p>代码到位后，先启动 PostgreSQL 和 Redis。它们是后端保存账号、模型、文章和任务队列的基础。</p>
+
+<pre lang="bash" caption="启动基础服务"><code>docker compose up -d postgres redis</code></pre>
+
+<p>接下来初始化后端。这里最重要的是显式创建管理员账号，系统不会再自动生成默认管理员。</p>
+
+<pre lang="bash" caption="初始化后端"><code>cd backend
+cp .env.example .env
+npm ci
+npm run db:init
+npm run db:bootstrap-admin -- --username admin --password 'your-strong-password' --email admin@example.com --name 管理员
+npm run start:dev</code></pre>
+
+<p>另开一个终端启动前端。</p>
+
+<pre lang="bash" caption="启动前端"><code>cd frontend
+cp .env.example .env
+npm ci
+npm run dev</code></pre>
+
+<callout emoji="📌" background-color="light-blue" border-color="blue">
+  <p><b>做到这里你应该看到：</b>前端能打开登录页，后端终端显示应用已启动，数据库里已经有一个管理员账号。</p>
+</callout>
+
+<hr/>
+
+<h1>步骤 2：用 1WorkBuddy 方式部署</h1>
+<p>1WorkBuddy 方式适合把部署过程交给工作流 Agent。你不需要一条条手打命令，而是把目标、仓库、环境变量和验收标准一次性说清楚。</p>
+
+<table>
+  <thead>
+    <tr><th background-color="light-gray">给 1WorkBuddy 的信息</th><th background-color="light-gray">示例内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>仓库</td><td>zhuy3075-ui/ai-content</td></tr>
+    <tr><td>基础服务</td><td>PostgreSQL、Redis</td></tr>
+    <tr><td>后端环境变量</td><td>DATABASE_URL、REDIS_HOST、REDIS_PORT、CORS_ORIGIN、ENABLE_SWAGGER</td></tr>
+    <tr><td>验收结果</td><td>登录页可访问，管理员可登录，配置管理页可打开</td></tr>
+  </tbody>
+</table>
+
+<p>你可以把下面这段作为任务说明交给 1WorkBuddy。</p>
+
+<pre lang="text" caption="1WorkBuddy 任务说明"><code>请部署 AI Content。
+目标：前端可访问、后端可用、数据库迁移完成、管理员账号已初始化。
+请先启动 PostgreSQL 和 Redis，再执行后端 db:init 和 db:bootstrap-admin，最后启动前端。
+请验证登录页、配置管理页和 AI 平台预设是否可见。
+不要把 .env、API Key 或数据库备份提交到仓库。</code></pre>
+
+<p>这段说明不是让 1WorkBuddy 猜你的生产配置，而是把成功标准钉住：能访问、能登录、能进配置页。</p>
+
+<hr/>
+
+<h1>步骤 3：登录后台</h1>
+<p>系统启动后，打开前端地址。登录页现在是浅色高对比表单，账号和密码输入框有清晰边框、深色文字和明显焦点态。</p>
+
+<p>[截图 1：登录页，红色画笔圈出账号、密码和登录按钮。图片已插入文末图集。]</p>
+
+<ol>
+  <li seq="auto">输入初始化时创建的用户名。</li>
+  <li seq="auto">输入初始化密码。</li>
+  <li seq="auto">点击“登录系统”。</li>
+</ol>
+
+<callout emoji="🕳" background-color="light-yellow" border-color="yellow">
+  <p><b>我栽过的坑：</b>如果连续输错密码，系统会按 IP 加账号限流。你会看到登录失败次数过多的提示。这不是后端挂了，而是在保护后台入口。</p>
+</callout>
+
+<hr/>
+
+<h1>步骤 4：添加 DeepSeek 平台</h1>
+<p>登录后进入“配置管理”。你会先看到 AI 平台页，里面已经放好了 DeepSeek、OpenAI、Gemini、通义千问、豆包等预设。预设的作用是帮你少填 Base URL 和模型候选，不是替你保存密钥。</p>
+
+<p>[截图 2：AI 平台预设列表，红色画笔圈出平台预设区域。图片已插入文末图集。]</p>
+
+<p>点击 DeepSeek 预设后，会打开预设平台弹窗。你只需要补 API Key，然后保存。</p>
+
+<p>[截图 3：DeepSeek 预设弹窗，红色画笔圈出 Base URL、API Key 和预设模型。图片已插入文末图集。]</p>
+
+<callout emoji="⚠️" background-color="light-red" border-color="red" text-color="red">
+  <p><b>安全提醒：</b>平台列表不会把 API Key 明文返回前端，只会显示 hasApiKey 和 apiKeyMasked。编辑平台时，API Key 留空表示保留原密钥。</p>
+</callout>
+
+<hr/>
+
+<h1>步骤 5：在线拉取并导入模型</h1>
+<p>平台保存后，切到“AI 模型”。点击“在线拉取模型”，后端会使用已保存的平台密钥请求远端模型列表。前端只拿到模型名称和模型 ID，不会接触密钥。</p>
+
+<p>[截图 4：在线拉取模型弹窗，红色画笔圈出选择平台、拉取列表和导入按钮。图片已插入文末图集。]</p>
+
+<ol>
+  <li seq="auto">选择已经配置 API Key 的 DeepSeek 平台。</li>
+  <li seq="auto">点击“拉取列表”。</li>
+  <li seq="auto">勾选需要的模型。</li>
+  <li seq="auto">点击“导入已选模型”。</li>
+</ol>
+
+<p>批量导入时，如果某个模型已经存在，系统会跳过它并返回 skipped 数量。这样你可以放心重复拉取，不需要手动对照已有列表。</p>
+
+<hr/>
+
+<h1>步骤 6：设置默认模型</h1>
+<p>模型导入后，切到“默认模型”。至少给“文章创作模型”和“精选选题模型”分配可用模型。图片创作和 X 采集模型可以按实际功能需求再补。</p>
+
+<table>
+  <thead>
+    <tr><th background-color="light-gray">默认模型</th><th background-color="light-gray">用途</th><th background-color="light-gray">没配会怎样</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>文章创作模型</td><td>生成文章正文</td><td>文章生成不可用</td></tr>
+    <tr><td>精选选题模型</td><td>从素材中筛选选题</td><td>选题推荐不可用</td></tr>
+    <tr><td>图片创作模型</td><td>生成封面或配图</td><td>图片相关功能受限</td></tr>
+    <tr><td>X 采集模型</td><td>处理 X 平台内容</td><td>X 采集相关功能受限</td></tr>
+  </tbody>
+</table>
+
+<p>配完后可以运行首轮检查脚本。它会告诉你管理员、平台、模型、默认模型和信息源是否准备好。</p>
+
+<pre lang="bash" caption="首轮检查"><code>./scripts/check-first-run.sh</code></pre>
+
+<hr/>
+
+<h1>常见问题</h1>
+<table>
+  <thead>
+    <tr><th background-color="light-gray">问题</th><th background-color="light-gray">常见原因</th><th background-color="light-gray">先检查什么</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>前端打不开后端接口</td><td>CORS_ORIGIN 没包含前端地址</td><td>后端 .env 的 CORS_ORIGIN</td></tr>
+    <tr><td>生产环境看不到 Swagger</td><td>生产默认关闭</td><td>是否确实需要 ENABLE_SWAGGER=true</td></tr>
+    <tr><td>在线拉取模型失败</td><td>API Key 为空、平台被禁用或 Base URL 不对</td><td>AI 平台的启用状态和 Base URL</td></tr>
+    <tr><td>编辑平台后模型测试失败</td><td>旧客户端缓存或密钥变更</td><td>保存平台后重新测试模型</td></tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h1>本节练习</h1>
+<callout emoji="📝" background-color="light-blue" border-color="blue">
+  <p><b>今晚交作业：完成一次从部署到模型导入的闭环。</b></p>
+  <checkbox done="false">我已经启动 PostgreSQL、Redis、后端和前端。</checkbox>
+  <checkbox done="false">我已经用初始化管理员账号登录后台。</checkbox>
+  <checkbox done="false">我已经添加一个 AI 平台，并确认 API Key 只显示脱敏结果。</checkbox>
+  <checkbox done="false">我已经进入“在线拉取模型”弹窗，并完成一次模型导入或记录失败原因。</checkbox>
+  <p><b>合格标准：</b>提交登录页截图、AI 平台页截图、模型导入结果截图，或说明卡在哪一步和错误提示。</p>
+</callout>
+
+<p>学之前，你只能把项目跑起来；学完后，你能判断后台是否安全可用、模型是否配置完整、失败应该从哪里排查。</p>
+
+<p>← 前置阅读：无。下一步：给生产环境配置域名、备份和监控。</p>
+
+<hr/>
+
+<h1>红色标注截图图集</h1>
+<p>下面四张图片来自本地网页实拍，并已用红色画笔标注关键操作区域。创建文档后会依次插入：登录页、AI 平台预设、DeepSeek 预设弹窗、在线拉取模型弹窗。</p>

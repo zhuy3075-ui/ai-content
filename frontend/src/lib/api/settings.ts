@@ -6,11 +6,51 @@ export interface AIPlatform {
   id: string;
   name: string;
   baseUrl: string;
-  apiKey: string;
+  hasApiKey: boolean;
+  apiKeyMasked: string;
   enabled: boolean;
   models?: AIModel[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ModelPreset {
+  value: string;
+  hint?: string;
+}
+
+export interface AIPlatformPreset {
+  id: string;
+  label: string | { zh: string; en: string };
+  name: string;
+  defaultBaseUrl: string;
+  baseUrlPlaceholder: string;
+  protocolType: string;
+  supports: string[];
+  models: Array<string | ModelPreset>;
+}
+
+export interface CapabilityPreset {
+  id: string;
+  label: string;
+  description: string;
+  providers: string[];
+  providerModels?: Record<string, Array<string | ModelPreset>>;
+}
+
+export interface PlatformPresetResponse {
+  providers: AIPlatformPreset[];
+  capabilities: CapabilityPreset[];
+  protocolTypes: Array<{
+    value: string;
+    label: string | { zh: string; en: string };
+    hint: string | { zh: string; en: string };
+  }>;
+}
+
+export interface RemoteModel {
+  name: string;
+  modelId: string;
 }
 
 // AI 模型
@@ -47,6 +87,12 @@ export const settingsApi = {
   deletePlatform(id: string) {
     return api.delete<AIPlatform>(`/ai-platforms/${id}`);
   },
+  listPlatformPresets() {
+    return api.get<PlatformPresetResponse>('/ai-platforms/presets');
+  },
+  fetchRemoteModels(platformId: string) {
+    return api.get<{ platform: AIPlatform; models: RemoteModel[] }>(`/ai-platforms/${platformId}/remote-models`);
+  },
 
   // === AI 模型 ===
   listModels(platformId?: string) {
@@ -64,6 +110,14 @@ export const settingsApi = {
   },
   testModel(data: { platformId: string; modelId: string }) {
     return api.post<{ success: boolean; message: string; reply: string }>('/ai-models/test', data);
+  },
+  bulkCreateModels(data: { platformId: string; models: RemoteModel[] }) {
+    return api.post<{
+      created: AIModel[];
+      skipped: Array<RemoteModel & { reason: string }>;
+      createdCount: number;
+      skippedCount: number;
+    }>('/ai-models/bulk', data);
   },
 
   // === 默认模型配置 ===
@@ -98,7 +152,7 @@ export interface Source {
   name: string;
   type: string; // rss | api | crawler
   url: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   enabled: boolean;
   lastCrawlTime?: string;
   createdAt: string;

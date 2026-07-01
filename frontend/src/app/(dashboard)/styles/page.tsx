@@ -34,7 +34,7 @@ export default function StylesPage() {
                 </div>
             </header>
 
-            <Card className="bg-background/60 dark:bg-default-100/50 backdrop-blur-md border-small border-white/10 shadow-medium">
+            <Card className="bg-background/60 backdrop-blur-md border-small border-white/10 shadow-medium">
                 <Tabs
                     classNames={{
                         tabList: "mx-4 mt-6 text-medium bg-default-100/50",

@@ -36,7 +36,7 @@ export const WECHAT_DEFAULT_CSS = `
     margin: 10px 0;
   }
 
-  /* 顶部引导关注样式 */
+  /* 顶部说明区域样式 */
   .wechat-header {
     text-align: center;
     color: #888888;
@@ -46,7 +46,7 @@ export const WECHAT_DEFAULT_CSS = `
     padding-bottom: 10px;
   }
 
-  /* 底部作者名片样式 */
+  /* 底部说明区域样式 */
   .wechat-footer {
     margin-top: 3em;
     padding: 20px;
@@ -59,13 +59,7 @@ export const WECHAT_DEFAULT_CSS = `
 `;
 
 export const WECHAT_HEADER_HTML = `
-  <section class="wechat-header">
-    <p>💡 欢迎关注我们的公众号，获取最新 AI 前沿资讯！</p>
-  </section>
 `;
 
 export const WECHAT_FOOTER_HTML = `
-  <section class="wechat-footer">
-    <p>感谢阅读！如果喜欢这篇文章，请点赞和分享。</p>
-  </section>
 `;

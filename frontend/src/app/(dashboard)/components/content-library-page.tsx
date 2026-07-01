@@ -779,7 +779,7 @@ export function ContentLibraryPage({
                             base: "w-full sm:max-w-[280px]",
                             mainWrapper: "h-full",
                             input: "text-small",
-                            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20 backdrop-blur-md",
+                            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 backdrop-blur-md",
                         }}
                         size="sm"
                         placeholder={searchPlaceholder}
@@ -801,7 +801,7 @@ export function ContentLibraryPage({
                         }}
                         classNames={{
                             base: "w-full sm:max-w-[150px]",
-                            trigger: "h-full bg-default-400/20 dark:bg-default-500/20 backdrop-blur-md",
+                            trigger: "h-full bg-default-400/20 backdrop-blur-md",
                         }}
                     >
                         <SelectItem key="all">所有状态</SelectItem>

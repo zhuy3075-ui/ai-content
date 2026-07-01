@@ -8,17 +8,19 @@ import toast from "react-hot-toast";
 import { authApi } from "@/lib/api/auth";
 
 const inputClassNames = {
+  label: "text-sm font-semibold text-slate-800",
+  input: "text-base font-medium text-slate-950 placeholder:text-slate-500",
   inputWrapper:
-    "border border-white/20 bg-white/70 backdrop-blur-sm shadow-[0_8px_30px_rgba(15,23,42,0.08)] data-[hover=true]:border-foreground/20 group-data-[focus=true]:border-primary",
+    "h-14 border-2 border-slate-300 bg-white shadow-sm data-[hover=true]:border-slate-500 group-data-[focus=true]:border-primary group-data-[focus=true]:ring-4 group-data-[focus=true]:ring-primary/15",
 };
 const AUTH_PENDING_KEY = "ai-content-auth-pending";
 
 function LoginPageFallback() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.22),_transparent_30%),linear-gradient(135deg,#fff8f6_0%,#fff2eb_38%,#eef7ff_100%)]">
-      <div className="flex items-center gap-3 rounded-full bg-white/80 px-5 py-3 shadow-lg backdrop-blur">
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50">
+      <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 shadow-sm">
         <Spinner size="sm" />
-        <span className="text-sm text-default-600">正在检查登录状态...</span>
+        <span className="text-sm text-slate-600">正在检查登录状态...</span>
       </div>
     </div>
   );
@@ -109,18 +111,14 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.18),_transparent_28%),radial-gradient(circle_at_right,_rgba(59,130,246,0.16),_transparent_24%),linear-gradient(135deg,#fff7ed_0%,#fffdf8_42%,#eef6ff_100%)] px-4 py-10">
-      <div className="pointer-events-none absolute inset-0 opacity-70">
-        <div className="absolute left-[8%] top-[12%] h-44 w-44 rounded-full bg-amber-200/40 blur-3xl" />
-        <div className="absolute bottom-[14%] right-[10%] h-56 w-56 rounded-full bg-sky-200/40 blur-3xl" />
-      </div>
-
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-slate-50 px-4 py-10">
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(226,232,240,0.45)_0,rgba(255,255,255,0)_36%),linear-gradient(180deg,#ffffff_0,#f8fafc_56%,#eef2f7_100%)]" />
       <div className="relative grid w-full max-w-5xl gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <section className="hidden rounded-[32px] border border-white/50 bg-white/40 p-10 shadow-[0_25px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl lg:flex lg:flex-col lg:justify-between">
+        <section className="hidden rounded-2xl border border-slate-200 bg-white p-10 shadow-sm lg:flex lg:flex-col lg:justify-between">
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-1.5 text-xs font-semibold tracking-[0.24em] text-background">
+            <div className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-1.5 text-xs font-semibold text-white">
               <Icon icon="solar:pen-bold" width={16} />
-              AI CONTENT STUDIO
+              AI CONTENT
             </div>
             <div className="space-y-4">
               <h1 className="max-w-xl text-5xl font-black leading-[1.05] tracking-tight text-slate-900">
@@ -140,7 +138,7 @@ function LoginPageContent() {
               { title: "多形态创作", text: "文章与小红书卡图共享后台能力" },
               { title: "显式初始化", text: "首次安装时由部署者手动创建管理员" },
             ].map((item) => (
-              <div key={item.title} className="rounded-3xl border border-white/60 bg-white/65 p-4 shadow-sm">
+              <div key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-900">{item.title}</p>
                 <p className="mt-2 text-xs leading-6 text-slate-500">{item.text}</p>
               </div>
@@ -148,7 +146,7 @@ function LoginPageContent() {
           </div>
         </section>
 
-        <Card className="border border-white/60 bg-white/72 shadow-[0_25px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+        <Card className="border border-slate-200 bg-white shadow-sm">
           <CardHeader className="flex flex-col items-start gap-3 px-8 pb-0 pt-8">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg">
               <Icon icon="solar:lock-password-bold" width={24} />
@@ -176,7 +174,7 @@ function LoginPageContent() {
                 endContent={
                   <button type="button" onClick={() => setIsVisible((value) => !value)}>
                     <Icon
-                      className="pointer-events-none text-2xl text-foreground/45"
+                      className="pointer-events-none text-2xl text-slate-600"
                       icon={isVisible ? "solar:eye-closed-linear" : "solar:eye-bold"}
                     />
                   </button>

@@ -8,12 +8,6 @@
         --bg-gradient-to: rgba(255, 255, 255, 0);
     }
 
-    .dark {
-        --bg-gradient-from: rgba(120, 40, 200, 0.15);
-        /* 微弱的紫色光晕，增加透气感 */
-        --bg-gradient-to: rgba(0, 0, 0, 0);
-    }
-
     body {
         @apply bg-background text-foreground;
         /* 官方质感之一：叠加微弱的基于视口的放射性径向渐变，打破死白/死黑 */

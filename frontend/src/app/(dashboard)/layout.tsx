@@ -6,7 +6,6 @@ import { Icon } from "@iconify/react";
 import { useMediaQuery } from "usehooks-ts";
 import Sidebar from "@/components/application/sidebars/Sidebar Responsive/ts/sidebar";
 import { sectionItems } from "./sidebar-items";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { authApi, type AuthUser } from "@/lib/api/auth";
@@ -195,7 +194,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         "items-center": isCompact,
                     })}
                 >
-                    <ThemeToggle isCompact={isCompact} />
                     <Tooltip content="退出登录" isDisabled={!isCompact} placement="right">
                         <Button
                             className={cn("text-default-500 data-[hover=true]:text-foreground justify-start", {

@@ -143,7 +143,7 @@ export default function DashboardPage() {
             {/* 待办与系统监控 */}
             <div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
                 {/* 待发布草稿 */}
-                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
+                <Card className="bg-content1 shadow-sm border border-default-100 flex flex-col h-[400px]">
                     <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700 justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Icon icon="solar:document-text-bold" className="text-primary text-xl" />
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* 系统运行日志 */}
-                <Card className="bg-content1 shadow-sm border border-transparent dark:border-default-100 flex flex-col h-[400px]">
+                <Card className="bg-content1 shadow-sm border border-default-100 flex flex-col h-[400px]">
                     <CardHeader className="px-6 pt-6 font-bold text-medium text-default-700">实时系统日志</CardHeader>
                     <Divider />
                     <CardBody className="px-6 pb-6 text-default-500 text-sm overflow-y-auto">

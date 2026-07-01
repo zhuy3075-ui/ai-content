@@ -1,9 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardBody, Tabs, Tab, Input, Button, Switch, Divider, Chip, Select, SelectItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Spinner, addToast } from "@heroui/react";
+import { Card, Tabs, Tab, Input, Button, Switch, Divider, Chip, Select, SelectItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Spinner, addToast, Checkbox } from "@heroui/react";
 import { Icon, loadIcons } from "@iconify/react";
-import { settingsApi, AIPlatform, AIModel, DefaultModels, sourcesApi, Source, storageApi, StorageConfig } from "@/lib/api/settings";
+import { settingsApi, AIPlatform, AIModel, DefaultModels, sourcesApi, Source, storageApi, StorageConfig, AIPlatformPreset, RemoteModel } from "@/lib/api/settings";
+
+function getErrorMessage(error: unknown): string {
+    const apiMessage = (error as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
+    if (typeof apiMessage === "string" && apiMessage.trim()) {
+        return apiMessage;
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    const maybeMessage = (error as { message?: unknown })?.message;
+    return typeof maybeMessage === "string" && maybeMessage.trim() ? maybeMessage : "请求失败";
+}
 
 export default function SettingsPage() {
     useEffect(() => {
@@ -13,6 +27,7 @@ export default function SettingsPage() {
             'solar:pen-linear', 'solar:trash-bin-trash-linear', 'solar:server-bold-duotone',
             'solar:cpu-bolt-bold-duotone', 'solar:document-text-bold-duotone',
             'solar:gallery-bold-duotone', 'ri:twitter-x-line', 'solar:star-bold-duotone',
+            'solar:cloud-storage-bold', 'solar:cloud-download-bold',
         ]);
     }, []);
 
@@ -25,7 +40,7 @@ export default function SettingsPage() {
                 </Button>
             </header>
 
-            <Card className="bg-background/60 dark:bg-default-100/50 backdrop-blur-md border-small border-white/10 shadow-medium">
+            <Card className="bg-background/60 backdrop-blur-md border-small border-white/10 shadow-medium">
                 <Tabs
                     classNames={{
                         tabList: "mx-4 mt-6 text-medium bg-default-100/50",
@@ -55,21 +70,39 @@ export default function SettingsPage() {
     );
 }
 
+function getPresetLabel(label: AIPlatformPreset["label"]) {
+    return typeof label === "string" ? label : label.zh;
+}
+
+function normalizePresetModel(model: string | { value: string; hint?: string }): RemoteModel {
+    if (typeof model === "string") {
+        return { name: model, modelId: model };
+    }
+
+    return { name: model.hint ? `${model.value} (${model.hint})` : model.value, modelId: model.value };
+}
+
 // AI 平台管理
 function AIPlatformSettings() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [platforms, setPlatforms] = useState<AIPlatform[]>([]);
+    const [presets, setPresets] = useState<AIPlatformPreset[]>([]);
     const [editingPlatform, setEditingPlatform] = useState<AIPlatform | null>(null);
+    const [selectedPreset, setSelectedPreset] = useState<AIPlatformPreset | null>(null);
     const [loading, setLoading] = useState(true);
 
     // 加载平台列表
     const fetchPlatforms = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await settingsApi.listPlatforms();
+            const [data, presetData] = await Promise.all([
+                settingsApi.listPlatforms(),
+                settingsApi.listPlatformPresets(),
+            ]);
             setPlatforms(data);
-        } catch (e: any) {
-            addToast({ title: "加载失败", description: e.message, color: "danger" });
+            setPresets(presetData.providers);
+        } catch (e: unknown) {
+            addToast({ title: "加载失败", description: getErrorMessage(e), color: "danger" });
         } finally {
             setLoading(false);
         }
@@ -79,11 +112,19 @@ function AIPlatformSettings() {
 
     const handleAddPlatform = () => {
         setEditingPlatform(null);
+        setSelectedPreset(null);
         onOpen();
     };
 
     const handleEditPlatform = (platform: AIPlatform) => {
         setEditingPlatform(platform);
+        setSelectedPreset(null);
+        onOpen();
+    };
+
+    const handleAddPresetPlatform = (preset: AIPlatformPreset) => {
+        setEditingPlatform(null);
+        setSelectedPreset(preset);
         onOpen();
     };
 
@@ -93,26 +134,29 @@ function AIPlatformSettings() {
             await settingsApi.deletePlatform(id);
             setPlatforms(platforms.filter(p => p.id !== id));
             addToast({ title: "删除成功", color: "success" });
-        } catch (e: any) {
-            addToast({ title: "删除失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "删除失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
     // Modal 保存回调
-    const handleSave = async (formData: { name: string; baseUrl: string; apiKey: string }) => {
+    const handleSave = async (formData: { name: string; baseUrl: string; apiKey?: string }) => {
         try {
             if (editingPlatform) {
-                // 编辑
-                await settingsApi.updatePlatform(editingPlatform.id, formData);
+                const updateData = { ...formData };
+                if (!updateData.apiKey?.trim()) {
+                    delete updateData.apiKey;
+                }
+                await settingsApi.updatePlatform(editingPlatform.id, updateData);
             } else {
-                // 新建
-                await settingsApi.createPlatform(formData);
+                await settingsApi.createPlatform({ ...formData, apiKey: formData.apiKey || "" });
             }
+            setSelectedPreset(null);
             onClose();
             fetchPlatforms(); // 重新加载
             addToast({ title: "保存成功", color: "success" });
-        } catch (e: any) {
-            addToast({ title: "保存失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "保存失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
@@ -125,9 +169,31 @@ function AIPlatformSettings() {
                     <h3 className="text-medium font-bold">AI 平台管理</h3>
                     <p className="text-small text-default-500 mt-1">配置不同的 AI 服务提供商，支持 OpenAI 兼容协议</p>
                 </div>
-                <Button color="primary" startContent={<Icon icon="solar:add-circle-bold" />} onClick={handleAddPlatform}>
-                    添加平台
-                </Button>
+                <div className="flex flex-wrap justify-end gap-2">
+                    <Button variant="flat" startContent={<Icon icon="solar:star-bold-duotone" />} onClick={() => handleAddPresetPlatform(presets[0])} isDisabled={presets.length === 0}>
+                        添加预设平台
+                    </Button>
+                    <Button color="primary" startContent={<Icon icon="solar:add-circle-bold" />} onClick={handleAddPlatform}>
+                        添加平台
+                    </Button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {presets.filter((preset) => preset.id !== "custom").map((preset) => (
+                    <button
+                        key={preset.id}
+                        className="flex items-center justify-between rounded-medium border border-divider bg-content1 px-3 py-2 text-left transition-colors hover:border-primary"
+                        type="button"
+                        onClick={() => handleAddPresetPlatform(preset)}
+                    >
+                        <span>
+                            <span className="block text-small font-medium text-default-900">{getPresetLabel(preset.label)}</span>
+                            <span className="block truncate text-tiny text-default-500">{preset.protocolType}</span>
+                        </span>
+                        <Icon className="text-primary" icon="solar:add-circle-bold" width={18} />
+                    </button>
+                ))}
             </div>
 
             <Table aria-label="AI 平台列表" className="border-small border-divider rounded-medium">
@@ -150,7 +216,11 @@ function AIPlatformSettings() {
                                 <span className="text-small text-default-500">{platform.baseUrl}</span>
                             </TableCell>
                             <TableCell>
-                                <code className="text-tiny bg-default-100 px-2 py-1 rounded">{platform.apiKey.substring(0, 8)}***</code>
+                                {platform.hasApiKey ? (
+                                    <code className="text-tiny bg-default-100 px-2 py-1 rounded">{platform.apiKeyMasked}</code>
+                                ) : (
+                                    <Chip size="sm" color="warning" variant="flat">未配置</Chip>
+                                )}
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center justify-center gap-2">
@@ -167,7 +237,7 @@ function AIPlatformSettings() {
                 </TableBody>
             </Table>
 
-            <PlatformModal isOpen={isOpen} onClose={onClose} platform={editingPlatform} onSave={handleSave} />
+            <PlatformModal isOpen={isOpen} onClose={onClose} platform={editingPlatform} preset={selectedPreset} onSave={handleSave} />
         </div>
     );
 }
@@ -175,8 +245,9 @@ function AIPlatformSettings() {
 // AI 模型管理
 function AIModelSettings() {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const remoteModal = useDisclosure();
     const [models, setModels] = useState<AIModel[]>([]);
-    const [platforms, setPlatforms] = useState<{ id: string; name: string }[]>([]);
+    const [platforms, setPlatforms] = useState<AIPlatform[]>([]);
     const [editingModel, setEditingModel] = useState<AIModel | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -188,9 +259,9 @@ function AIModelSettings() {
                 settingsApi.listPlatforms(),
             ]);
             setModels(modelsData);
-            setPlatforms(platformsData.map(p => ({ id: p.id, name: p.name })));
-        } catch (e: any) {
-            addToast({ title: "加载失败", description: e.message, color: "danger" });
+            setPlatforms(platformsData);
+        } catch (e: unknown) {
+            addToast({ title: "加载失败", description: getErrorMessage(e), color: "danger" });
         } finally {
             setLoading(false);
         }
@@ -213,8 +284,8 @@ function AIModelSettings() {
             await settingsApi.deleteModel(id);
             setModels(models.filter(m => m.id !== id));
             addToast({ title: "删除成功", color: "success" });
-        } catch (e: any) {
-            addToast({ title: "删除失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "删除失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
@@ -228,8 +299,8 @@ function AIModelSettings() {
             onClose();
             fetchData();
             addToast({ title: "保存成功", color: "success" });
-        } catch (e: any) {
-            addToast({ title: "保存失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "保存失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
@@ -246,9 +317,14 @@ function AIModelSettings() {
                     <h3 className="text-medium font-bold">AI 模型管理</h3>
                     <p className="text-small text-default-500 mt-1">配置可用的 AI 模型，关联到对应的平台</p>
                 </div>
-                <Button color="primary" startContent={<Icon icon="solar:add-circle-bold" />} onClick={handleAddModel}>
-                    添加模型
-                </Button>
+                <div className="flex flex-wrap justify-end gap-2">
+                    <Button variant="flat" startContent={<Icon icon="solar:cloud-download-bold" />} onClick={remoteModal.onOpen}>
+                        在线拉取模型
+                    </Button>
+                    <Button color="primary" startContent={<Icon icon="solar:add-circle-bold" />} onClick={handleAddModel}>
+                        添加模型
+                    </Button>
+                </div>
             </div>
 
             <Table aria-label="AI 模型列表" className="border-small border-divider rounded-medium">
@@ -289,6 +365,7 @@ function AIModelSettings() {
             </Table>
 
             <ModelModal isOpen={isOpen} onClose={onClose} model={editingModel} platforms={platforms} onSave={handleSave} />
+            <RemoteModelsModal isOpen={remoteModal.isOpen} onClose={remoteModal.onClose} platforms={platforms} onImported={fetchData} />
         </div>
     );
 }
@@ -312,8 +389,8 @@ function DefaultModelSettings() {
                 ]);
                 setDefaultModels(defaults);
                 setAvailableModels(models.map(m => ({ id: m.id, name: m.name })));
-            } catch (e: any) {
-                addToast({ title: "加载失败", description: e.message, color: "danger" });
+            } catch (e: unknown) {
+                addToast({ title: "加载失败", description: getErrorMessage(e), color: "danger" });
             } finally {
                 setLoading(false);
             }
@@ -327,8 +404,8 @@ function DefaultModelSettings() {
             setSaving(true);
             await settingsApi.updateDefaults(defaultModels);
             addToast({ title: "默认模型配置已保存", color: "success" });
-        } catch (e: any) {
-            addToast({ title: "保存失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "保存失败", description: getErrorMessage(e), color: "danger" });
         } finally {
             setSaving(false);
         }
@@ -393,8 +470,8 @@ function SourceSettings() {
             setLoading(true);
             const data = await sourcesApi.list();
             setSources(data);
-        } catch (e: any) {
-            addToast({ title: "加载信息源失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "加载信息源失败", description: getErrorMessage(e), color: "danger" });
         } finally {
             setLoading(false);
         }
@@ -408,8 +485,8 @@ function SourceSettings() {
             const result = await sourcesApi.seed();
             addToast({ title: "初始化完成", description: `新增 ${result.created} 个，跳过 ${result.skipped} 个`, color: "success" });
             await loadSources();
-        } catch (e: any) {
-            addToast({ title: "初始化失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "初始化失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
@@ -418,8 +495,8 @@ function SourceSettings() {
         try {
             await sourcesApi.toggle(id);
             setSources(prev => prev.map(s => s.id === id ? { ...s, enabled: !s.enabled } : s));
-        } catch (e: any) {
-            addToast({ title: "切换失败", description: e.message, color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "切换失败", description: getErrorMessage(e), color: "danger" });
         }
     };
 
@@ -486,9 +563,9 @@ function SourceSettings() {
 }
 
 // 平台编辑弹窗 - 真实保存
-function PlatformModal({ isOpen, onClose, platform, onSave }: {
-    isOpen: boolean; onClose: () => void; platform: AIPlatform | null;
-    onSave: (data: { name: string; baseUrl: string; apiKey: string }) => Promise<void>;
+function PlatformModal({ isOpen, onClose, platform, preset, onSave }: {
+    isOpen: boolean; onClose: () => void; platform: AIPlatform | null; preset?: AIPlatformPreset | null;
+    onSave: (data: { name: string; baseUrl: string; apiKey?: string }) => Promise<void>;
 }) {
     const [formData, setFormData] = useState({ name: "", baseUrl: "", apiKey: "" });
     const [saving, setSaving] = useState(false);
@@ -496,11 +573,13 @@ function PlatformModal({ isOpen, onClose, platform, onSave }: {
     // 当 platform 变化时重置表单
     useEffect(() => {
         if (platform) {
-            setFormData({ name: platform.name, baseUrl: platform.baseUrl, apiKey: platform.apiKey });
+            setFormData({ name: platform.name, baseUrl: platform.baseUrl, apiKey: "" });
+        } else if (preset) {
+            setFormData({ name: preset.name, baseUrl: preset.defaultBaseUrl, apiKey: "" });
         } else {
             setFormData({ name: "", baseUrl: "", apiKey: "" });
         }
-    }, [platform]);
+    }, [platform, preset]);
 
     const handleSubmit = async () => {
         setSaving(true);
@@ -514,15 +593,31 @@ function PlatformModal({ isOpen, onClose, platform, onSave }: {
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="2xl">
             <ModalContent>
-                <ModalHeader>{platform ? "编辑平台" : "添加平台"}</ModalHeader>
+                <ModalHeader>{platform ? "编辑平台" : preset ? `添加预设平台：${getPresetLabel(preset.label)}` : "添加平台"}</ModalHeader>
                 <ModalBody>
                     <div className="flex flex-col gap-4">
                         <Input label="平台名称" placeholder="例如：OpenAI, DeepSeek" value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })} labelPlacement="outside" />
-                        <Input label="Base URL" placeholder="https://api.openai.com/v1" value={formData.baseUrl}
+                        <Input label="Base URL" placeholder="例如：<provider-api-base>/v1" value={formData.baseUrl}
                             onChange={(e) => setFormData({ ...formData, baseUrl: e.target.value })} labelPlacement="outside" />
-                        <Input label="API Key" placeholder="sk-..." type="password" value={formData.apiKey}
-                            onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} labelPlacement="outside" />
+                        <Input
+                            description={platform ? "留空会保留当前已保存的密钥" : "密钥只保存在后端，列表中仅显示脱敏结果"}
+                            label="API Key"
+                            placeholder={platform?.hasApiKey ? platform.apiKeyMasked : "sk-..."}
+                            type="password"
+                            value={formData.apiKey}
+                            onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                            labelPlacement="outside"
+                        />
+                        {preset && preset.models.length > 0 ? (
+                            <div className="rounded-medium border border-divider bg-default-50 px-3 py-2">
+                                <p className="text-tiny font-medium text-default-600">预设模型</p>
+                                <p className="mt-1 text-tiny leading-5 text-default-500">
+                                    {preset.models.slice(0, 6).map((model) => normalizePresetModel(model).modelId).join("、")}
+                                    {preset.models.length > 6 ? " 等" : ""}
+                                </p>
+                            </div>
+                        ) : null}
                     </div>
                 </ModalBody>
                 <ModalFooter>
@@ -565,8 +660,8 @@ function ModelModal({ isOpen, onClose, model, platforms, onSave }: {
             } else {
                 addToast({ title: "测试失败", description: res.message, color: "danger" });
             }
-        } catch (e: any) {
-            addToast({ title: "测试异常", description: e.response?.data?.message || e.message || "请求异常，请检查网络或配置", color: "danger" });
+        } catch (e: unknown) {
+            addToast({ title: "测试异常", description: getErrorMessage(e), color: "danger" });
         } finally {
             setTesting(false);
         }
@@ -616,6 +711,141 @@ function ModelModal({ isOpen, onClose, model, platforms, onSave }: {
     );
 }
 
+function RemoteModelsModal({ isOpen, onClose, platforms, onImported }: {
+    isOpen: boolean;
+    onClose: () => void;
+    platforms: AIPlatform[];
+    onImported: () => Promise<void>;
+}) {
+    const [platformId, setPlatformId] = useState("");
+    const [models, setModels] = useState<RemoteModel[]>([]);
+    const [selectedModelIds, setSelectedModelIds] = useState<Set<string>>(new Set());
+    const [loading, setLoading] = useState(false);
+    const [importing, setImporting] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const deepSeekPlatform = platforms.find((platform) => /deepseek/i.test(`${platform.name} ${platform.baseUrl}`));
+        const firstPlatform = deepSeekPlatform || platforms[0];
+        setPlatformId(firstPlatform?.id || "");
+        setModels([]);
+        setSelectedModelIds(new Set());
+    }, [isOpen, platforms]);
+
+    const selectedModels = models.filter((model) => selectedModelIds.has(model.modelId));
+
+    const toggleModel = (modelId: string, selected: boolean) => {
+        setSelectedModelIds((prev) => {
+            const next = new Set(prev);
+            if (selected) {
+                next.add(modelId);
+            } else {
+                next.delete(modelId);
+            }
+            return next;
+        });
+    };
+
+    const fetchRemoteModels = async () => {
+        if (!platformId) {
+            addToast({ title: "请选择平台", color: "warning" });
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const result = await settingsApi.fetchRemoteModels(platformId);
+            setModels(result.models);
+            setSelectedModelIds(new Set(result.models.map((model) => model.modelId)));
+            addToast({ title: "模型列表已拉取", description: `共 ${result.models.length} 个模型`, color: "success" });
+        } catch (e: unknown) {
+            addToast({ title: "拉取失败", description: getErrorMessage(e), color: "danger" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const importModels = async () => {
+        if (!platformId || selectedModels.length === 0) {
+            addToast({ title: "请选择要导入的模型", color: "warning" });
+            return;
+        }
+
+        try {
+            setImporting(true);
+            const result = await settingsApi.bulkCreateModels({ platformId, models: selectedModels });
+            addToast({
+                title: "导入完成",
+                description: `新增 ${result.createdCount} 个，跳过 ${result.skippedCount} 个`,
+                color: "success",
+            });
+            await onImported();
+            onClose();
+        } catch (e: unknown) {
+            addToast({ title: "导入失败", description: getErrorMessage(e), color: "danger" });
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+            <ModalContent>
+                <ModalHeader>在线拉取模型</ModalHeader>
+                <ModalBody>
+                    <div className="flex flex-col gap-4">
+                        <Select
+                            label="选择平台"
+                            placeholder="请选择已配置 API Key 的平台"
+                            selectedKeys={platformId ? [platformId] : []}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                setPlatformId(e.target.value);
+                                setModels([]);
+                                setSelectedModelIds(new Set());
+                            }}
+                            labelPlacement="outside"
+                        >
+                            {platforms.map((platform) => (
+                                <SelectItem key={platform.id}>{platform.name}</SelectItem>
+                            ))}
+                        </Select>
+                        <div className="flex items-center justify-between rounded-medium border border-divider bg-default-50 px-3 py-2">
+                            <p className="text-small text-default-600">DeepSeek 等 OpenAI 兼容平台会通过后端安全代理拉取 `/models`，密钥不会暴露给前端。</p>
+                            <Button color="primary" variant="flat" isLoading={loading} onClick={fetchRemoteModels}>
+                                拉取列表
+                            </Button>
+                        </div>
+                        <div className="max-h-[320px] overflow-y-auto rounded-medium border border-divider p-2">
+                            {models.length === 0 ? (
+                                <p className="py-8 text-center text-small text-default-500">尚未拉取模型列表</p>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                    {models.map((model) => (
+                                        <Checkbox
+                                            key={model.modelId}
+                                            className="rounded-medium border border-divider px-3 py-2"
+                                            isSelected={selectedModelIds.has(model.modelId)}
+                                            onValueChange={(selected) => toggleModel(model.modelId, selected)}
+                                        >
+                                            <span className="font-mono text-small">{model.modelId}</span>
+                                        </Checkbox>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant="flat" onClick={onClose}>取消</Button>
+                    <Button color="primary" isLoading={importing} onClick={importModels}>
+                        导入已选模型
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
+
 // 存储配置（七牛云）
 function StorageSettings() {
     const [config, setConfig] = useState<StorageConfig>({ accessKey: '', secretKey: '', bucket: '', domain: '' });
@@ -626,7 +856,7 @@ function StorageSettings() {
     useEffect(() => {
         storageApi.getConfig()
             .then(data => setConfig(data || { accessKey: '', secretKey: '', bucket: '', domain: '' }))
-            .catch(e => addToast({ title: '加载失败', description: e.message, color: 'danger' }))
+            .catch((e: unknown) => addToast({ title: '加载失败', description: getErrorMessage(e), color: 'danger' }))
             .finally(() => setLoading(false));
     }, []);
 
@@ -635,8 +865,8 @@ function StorageSettings() {
             setSaving(true);
             await storageApi.updateConfig(config);
             addToast({ title: '保存成功', description: '七牛云配置已保存', color: 'success' });
-        } catch (e: any) {
-            addToast({ title: '保存失败', description: e.message, color: 'danger' });
+        } catch (e: unknown) {
+            addToast({ title: '保存失败', description: getErrorMessage(e), color: 'danger' });
         } finally {
             setSaving(false);
         }
@@ -651,8 +881,8 @@ function StorageSettings() {
             } else {
                 addToast({ title: '连接失败', description: res.message, color: 'danger' });
             }
-        } catch (e: any) {
-            addToast({ title: '测试异常', description: e.message, color: 'danger' });
+        } catch (e: unknown) {
+            addToast({ title: '测试异常', description: getErrorMessage(e), color: 'danger' });
         } finally {
             setTesting(false);
         }
@@ -692,7 +922,7 @@ function StorageSettings() {
                 />
                 <Input
                     label="CDN 域名"
-                    placeholder="例如：https://cdn.example.com"
+                    placeholder="例如：图片访问域名"
                     value={config.domain}
                     onChange={e => setConfig({ ...config, domain: e.target.value })}
                     labelPlacement="outside"
@@ -717,5 +947,3 @@ function StorageSettings() {
         </div>
     );
 }
-
-

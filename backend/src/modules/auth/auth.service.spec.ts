@@ -1,4 +1,4 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { hashPassword } from './auth.utils';
 
@@ -144,5 +144,39 @@ describe('AuthService', () => {
         password: 'wrong-password',
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('连续登录失败后会按 IP 和账号限流', async () => {
+    const { service, prisma } = createService();
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-1',
+      username: 'admin',
+      email: 'admin@local',
+      name: '管理员',
+      status: 'active',
+      passwordHash: await hashPassword('admin123'),
+      lastLoginAt: null,
+      createdAt: new Date('2026-03-17T00:00:00.000Z'),
+      updatedAt: new Date('2026-03-17T00:00:00.000Z'),
+    });
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await expect(
+        service.login({
+          username: 'admin',
+          password: 'wrong-password',
+          ipAddress: '127.0.0.1',
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    }
+
+    await expect(
+      service.login({
+        username: 'admin',
+        password: 'wrong-password',
+        ipAddress: '127.0.0.1',
+      }),
+    ).rejects.toHaveProperty('status', HttpStatus.TOO_MANY_REQUESTS);
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(5);
   });
 });

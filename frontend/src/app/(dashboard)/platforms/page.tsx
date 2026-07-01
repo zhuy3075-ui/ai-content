@@ -31,7 +31,7 @@ export default function AccountsPage() {
             appId: '',
             apiToken: '',
             config: {
-                apiUrl: 'https://mp.idouq.com/api/open/article',
+                apiUrl: '',
                 openComment: 1,
                 onlyFansCanComment: 0,
                 categoryId: '' as string | number,
@@ -73,7 +73,7 @@ export default function AccountsPage() {
             appId: account.appId || '',
             apiToken: account.apiToken || '',
             config: {
-                apiUrl: account.config?.apiUrl || 'https://mp.idouq.com/api/open/article',
+                apiUrl: account.config?.apiUrl || '',
                 openComment: account.config?.openComment ?? 1,
                 onlyFansCanComment: account.config?.onlyFansCanComment ?? 0,
                 categoryId: account.config?.categoryId ?? '',
@@ -83,7 +83,7 @@ export default function AccountsPage() {
     };
 
     const handleSave = async () => {
-        if (!formData.name || !formData.appId || !formData.apiToken) {
+        if (!formData.name || !formData.appId || !formData.apiToken || !formData.config.apiUrl) {
             addToast({ title: "请填写完整信息", color: "warning" });
             return;
         }
@@ -198,7 +198,7 @@ export default function AccountsPage() {
                         />
                         <Input
                             label="第三方 API 地址"
-                            placeholder="如: https://mp.idouq.com/api/open/article"
+                            placeholder="请输入发布服务 API 地址"
                             value={formData.config.apiUrl}
                             onValueChange={(v) => setFormData({ ...formData, config: { ...formData.config, apiUrl: v } })}
                         />

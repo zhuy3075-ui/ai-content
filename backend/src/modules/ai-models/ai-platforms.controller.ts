@@ -9,10 +9,22 @@ import { UpdatePlatformDto } from './dto/update-platform.dto';
 export class AiPlatformsController {
   constructor(private readonly service: AiPlatformsService) {}
 
+  @Get('presets')
+  @ApiOperation({ summary: '获取 AI 平台与模型预设' })
+  getPresets() {
+    return this.service.getPresets();
+  }
+
   @Get()
   @ApiOperation({ summary: '获取所有 AI 平台' })
   findAll() {
     return this.service.findAll();
+  }
+
+  @Get(':id/remote-models')
+  @ApiOperation({ summary: '在线拉取平台可用模型列表' })
+  findRemoteModels(@Param('id') id: string) {
+    return this.service.findRemoteModels(id);
   }
 
   @Get(':id')

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Divider, cn, type ButtonProps } from "@heroui/react";
+import { Card, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, cn, type ButtonProps } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 export type ChartData = {
@@ -24,7 +24,7 @@ export const BarChartCard = React.forwardRef<HTMLDivElement, BarChartCardProps>(
         return (
             <Card
                 ref={ref}
-                className={cn("dark:border-default-100 h-[360px] border border-transparent bg-content1 shadow-sm", className)}
+                className={cn("h-[360px] border border-default-100 bg-content1 shadow-sm", className)}
             >
                 <div className="flex flex-col gap-y-4 p-4">
                     <dt className="flex items-center justify-between">
