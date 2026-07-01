@@ -35,14 +35,18 @@ graph TD
 
 <hr/>
 <h1>第一章：安装部署</h1>
-<h2>方式 A：用 Codex 部署</h2>
-<p>Codex 方式适合你在自己的开发机上直接操作。它的好处是所有命令都可复现，排错时也能看到后端日志。</p>
-<pre lang="bash" caption="拉取代码并启动基础服务"><code>git clone https://github.com/zhuy3075-ui/ai-content.git<br/>cd ai-content<br/>docker compose up -d postgres redis</code></pre>
-<p>上面这段命令只解决数据库和 Redis。接下来要初始化后端，创建管理员账号。管理员账号必须显式创建，不要把默认密码写进仓库。</p>
-<pre lang="bash" caption="初始化后端并创建管理员"><code>cd backend<br/>cp .env.example .env<br/>npm ci<br/>npm run db:init<br/>npm run db:bootstrap-admin -- --username admin --password '&lt;强密码&gt;' --email admin@example.com --name 管理员<br/>npm run start:dev</code></pre>
-<p>最后另开一个终端启动前端。前端启动后默认访问本地 3000 端口；如果你改了后端端口，也要同步设置前端的 API 地址。</p>
-<pre lang="bash" caption="启动前端"><code>cd frontend<br/>cp .env.example .env<br/>npm ci<br/>npm run dev</code></pre>
-<p>命令能跑通，只代表应用启动了；还要用浏览器验证登录页、配置页和接口连通。下面的登录截图就是第一个验收点。</p>
+<p>这一章不是让你手动敲一长串命令，而是把仓库链接和自然语言部署目标直接交给 Codex 或 1WorkBuddy。你负责说清楚“要部署什么、部署到哪里、怎么验收、哪些密钥不能外泄”，Agent 负责读取 README、执行命令、修复启动问题并回报结果。</p>
+<p><b>仓库链接：</b>https://github.com/zhuy3075-ui/ai-content</p>
+
+<h2>方式 A：直接给 Codex 部署</h2>
+<p>Codex 适合在你当前电脑或云开发环境里直接执行。你只需要把下面这段自然语言发给 Codex，不要拆成零散命令；让它按仓库 README 和后端 README 自己完成拉取、安装、初始化、启动和验证。</p>
+<pre lang="text" caption="直接发给 Codex 的部署请求"><code>请部署这个项目：https://github.com/zhuy3075-ui/ai-content<br/><br/>目标：把 AI Content 在当前环境跑起来，前端、后端、PostgreSQL、Redis 都要可用。<br/>要求：先读取 README.md 和 backend/README.md，再选择最小可行部署路径。<br/>管理员：初始化一个管理员账号，密码用我稍后提供的强密码，不要写入仓库。<br/>模型：部署后先进入配置管理，确认 AI 平台预设、DeepSeek 在线拉取模型入口和默认模型配置页可见。<br/>安全：不要提交 .env、API Key、Cookie、数据库备份或任何生产凭据。<br/>验收：返回前端访问地址、后端接口地址、管理员登录方式、已执行的验证命令，以及登录页和配置管理页是否可打开。</code></pre>
+<p>Codex 回答“部署完成”以后，不要马上进入内容生产。先让它给出前端地址、后端地址、数据库迁移结果和管理员账号初始化结果，再按下面的登录截图做第一次人工验收。</p>
+
+<h2>方式 B：直接给 1WorkBuddy 部署</h2>
+<p>1WorkBuddy 适合把部署过程交给工作流 Agent。你同样只要提供 GitHub 链接和自然语言目标，让它自己拉取仓库、配置服务、启动应用并交付验收结果。</p>
+<pre lang="text" caption="直接发给 1WorkBuddy 的部署请求"><code>请部署这个 GitHub 仓库：https://github.com/zhuy3075-ui/ai-content<br/><br/>部署目标：AI Content 前端可访问，后端 API 可用，PostgreSQL 和 Redis 可用，数据库迁移完成，管理员账号已初始化。<br/>执行方式：请先阅读仓库 README 和 backend/README，按文档完成部署，不要要求我手动逐条执行命令。<br/>环境变量：根据文档准备 DATABASE_URL、REDIS_HOST、REDIS_PORT、JWT_SECRET、CORS_ORIGIN、ENABLE_SWAGGER 等必要配置。<br/>交付物：请给我前端访问地址、后端健康检查或接口地址、管理员登录入口、部署日志摘要和失败排查记录。<br/>验收标准：登录页可打开，管理员可登录，配置管理页可访问，AI 平台预设可见，DeepSeek 模型在线拉取入口可见。<br/>安全要求：不要把 .env、API Key、Cookie、数据库备份、生产密钥提交到 GitHub 或写入公开文档。</code></pre>
+<p>这段请求的价值是把成功标准写死。1WorkBuddy 执行完后，你按后面的截图逐项验收，而不是只看“部署完成”四个字。</p>
 
 <h2>方式 B：用 1WorkBuddy 部署</h2>
 <p>1WorkBuddy 适合把部署过程交给工作流 Agent。你要给它的不是一句“帮我部署”，而是一份边界清楚的任务单。</p>
